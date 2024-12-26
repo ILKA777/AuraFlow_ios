@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0444E4812D1D75D000FAF9D1 /* FLEX in Frameworks */ = {isa = PBXBuildFile; productRef = 0444E4802D1D75D000FAF9D1 /* FLEX */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		0444E18F2D1D709A00FAF9D1 /* AuraFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AuraFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0444E4812D1D75D000FAF9D1 /* FLEX in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = AuraFlow;
 			packageProductDependencies = (
+				0444E4802D1D75D000FAF9D1 /* FLEX */,
 			);
 			productName = AuraFlow;
 			productReference = 0444E18F2D1D709A00FAF9D1 /* AuraFlow.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = 0444E1862D1D709A00FAF9D1;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0444E47F2D1D75D000FAF9D1 /* XCRemoteSwiftPackageReference "FLEX" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0444E1902D1D709A00FAF9D1 /* Products */;
 			projectDirPath = "";
@@ -248,8 +257,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AuraFlow/Preview Content\"";
+				DEVELOPMENT_TEAM = TLYCHDJ6FK;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Aura Flow";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -285,8 +296,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AuraFlow/Preview Content\"";
+				DEVELOPMENT_TEAM = TLYCHDJ6FK;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Aura Flow";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -335,6 +348,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		0444E47F2D1D75D000FAF9D1 /* XCRemoteSwiftPackageReference "FLEX" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/FLEXTool/FLEX.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.22.10;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0444E4802D1D75D000FAF9D1 /* FLEX */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0444E47F2D1D75D000FAF9D1 /* XCRemoteSwiftPackageReference "FLEX" */;
+			productName = FLEX;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0444E1872D1D709A00FAF9D1 /* Project object */;
 }
