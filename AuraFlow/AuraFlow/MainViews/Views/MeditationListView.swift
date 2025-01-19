@@ -196,7 +196,7 @@ struct MeditationListView: View {
                                 Spacer()
                                 if isPlayingThisMeditation(meditation) {
                                     Image(systemName: "play.circle.fill")
-                                        .foregroundColor(Color(uiColor: .CalliopeYellow()))
+                                        .foregroundColor(Color(uiColor: .AuraFlowBlue()))
                                 } else {
                                     Text(meditation.duration)
                                         .font(Font.custom("Montserrat-Regular", size: 14))

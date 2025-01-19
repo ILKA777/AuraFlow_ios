@@ -17,6 +17,15 @@ extension UIColor {
         return #colorLiteral(red: 0.07058823529, green: 0.1254901961, blue: 0.2039215686, alpha: 1)
     }
     
+    static func AuraFlowBlue() -> UIColor {
+        return #colorLiteral(red: 0.00665412657, green: 0.3030216992, blue: 0.6829483509, alpha: 1)
+    }
+    
+    static func AuraFlowPink() -> UIColor {
+        return #colorLiteral(red: 1, green: 0.7051680684, blue: 0.6813043952, alpha: 1)
+    }
+    
+    
     static func CalliopeWhite() -> UIColor {
         return #colorLiteral(red: 0.9342232943, green: 0.9310330153, blue: 0.9309657216, alpha: 1)
     }

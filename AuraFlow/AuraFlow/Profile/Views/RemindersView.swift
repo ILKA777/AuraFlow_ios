@@ -69,7 +69,7 @@ struct RemindersView: View {
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(
-                        Color(uiColor: .CalliopeYellow())
+                        Color(uiColor: .AuraFlowBlue())
                         .cornerRadius(30)
                     )
                     .padding(.horizontal, 20)
@@ -143,7 +143,7 @@ struct RemindersView: View {
                 Spacer()
                 
                 Toggle("", isOn: isEnabled)
-                    .toggleStyle(SwitchToggleStyle(tint: Color(uiColor: .CalliopeYellow())))
+                    .toggleStyle(SwitchToggleStyle(tint: Color(uiColor: .AuraFlowBlue())))
                     .labelsHidden()
                 
             }
@@ -151,7 +151,7 @@ struct RemindersView: View {
             if let isAppLaunchReminderEnabled = isAppLaunchReminderEnabled, isEnabled.wrappedValue {
                 Toggle("При открытии приложения", isOn: isAppLaunchReminderEnabled)
                     .font(Font.custom("Montserrat-Regular", size: 16))
-                    .toggleStyle(SwitchToggleStyle(tint: Color(uiColor: .CalliopeYellow())))
+                    .toggleStyle(SwitchToggleStyle(tint: Color(uiColor: .AuraFlowBlue())))
                     .foregroundColor(Color(uiColor: .CalliopeWhite()))
             }
             

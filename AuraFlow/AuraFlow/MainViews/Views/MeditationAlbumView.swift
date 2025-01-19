@@ -21,7 +21,7 @@ struct MeditationAlbumView: View {
         NavigationLink(destination: MeditationListView(album: album, navigationPath: $navigationPath)) {
             ZStack {
                 RoundedRectangle(cornerRadius: 32)
-                    .fill(isPlaying ? Color(uiColor: .CalliopeYellow()) : Color.gray.opacity(0.2))
+                    .fill(isPlaying ? Color(uiColor: .AuraFlowBlue()) : Color.gray.opacity(0.3))
                 
                 VStack(alignment: .leading, spacing: 10) {
                     Text(album.title)
@@ -66,7 +66,7 @@ struct MeditationAlbumView: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 24, height: 24)
-                                    .foregroundColor(isPlaying ? Color(uiColor: .CalliopeBlack()) : Color(uiColor: .CalliopeYellow()))
+                                    .foregroundColor(isPlaying ? Color(uiColor: .CalliopeBlack()) : Color(uiColor: .AuraFlowBlue()))
                             }
                         }
                         .buttonStyle(PlainButtonStyle()) // Prevents the button from being captured by the NavigationLink

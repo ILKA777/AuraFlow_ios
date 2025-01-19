@@ -16,7 +16,7 @@ struct MeditationView: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
-                .fill(playbackManager.isPlaying && isPlayingThisMeditation ? Color(uiColor: .CalliopeYellow()) : Color.gray.opacity(0.2))
+                .fill(playbackManager.isPlaying && isPlayingThisMeditation ? Color(uiColor: .AuraFlowBlue()) : Color.gray.opacity(0.3))
                 .shadow(radius: 5)
             
             VStack(alignment: .leading, spacing: 10) {
@@ -93,7 +93,7 @@ struct MeditationView: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 18, height: 18)
-                                .foregroundColor(playbackManager.isPlaying && isPlayingThisMeditation ? Color(uiColor: .CalliopeBlack()) : Color(uiColor: .CalliopeYellow()))
+                                .foregroundColor(playbackManager.isPlaying && isPlayingThisMeditation ? Color(uiColor: .CalliopeBlack()) : Color(uiColor: .AuraFlowBlue()))
                         }
                     }
                 }

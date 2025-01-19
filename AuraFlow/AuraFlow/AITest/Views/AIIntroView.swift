@@ -47,7 +47,7 @@ struct AIIntroView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: geometry.size.width * 0.75, height: geometry.size.width * 0.75)
-                        .scaleEffect(x: 1.8, y: 1.8)
+                       // .scaleEffect(x: 1.8, y: 1.8)
                         .ignoresSafeArea()
                         .offset(y: -20)
                     

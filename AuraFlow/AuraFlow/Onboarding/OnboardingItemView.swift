@@ -37,7 +37,7 @@ struct OnboardingItemView: View {
                         HStack(alignment: .top) {
                             if isLastSlide {
                                 Circle()
-                                    .fill(Color(uiColor: .CalliopeYellow()))
+                                    .fill(Color(uiColor: .AuraFlowBlue()))
                                     .frame(width: 8, height: 8)
                                     .padding(.top, 4)
                             }

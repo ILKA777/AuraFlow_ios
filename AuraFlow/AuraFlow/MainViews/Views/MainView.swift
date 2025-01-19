@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct MainView: View {
+    @Binding var selectedTab: TabBarView.Tab
     @FocusState private var isInputActive: Bool
     @State private var searchText: String = ""
     @State private var keyboardHeight: CGFloat = 0
@@ -58,7 +59,7 @@ struct MainView: View {
                                                 }) {
                                                     ZStack {
                                                         Circle()
-                                                            .fill(Color(uiColor: .CalliopeDarkGreen()))
+                                                            .fill(Color(uiColor: .AuraFlowBlue()))
                                                             .frame(width: 48, height: 48)
                                                         
                                                         Image(systemName: "xmark")
@@ -82,25 +83,28 @@ struct MainView: View {
                                             }
                                         } else {
                                             HStack {
-                                                NavigationLink(destination: ProfileView()) {
-                                                    ZStack {
-                                                        Circle()
-                                                            .fill(Color(uiColor: .CalliopeYellow()))
-                                                            .frame(width: 48, height: 48)
-                                                        
-                                                        Image(systemName: "person")
-                                                            .resizable()
-                                                            .frame(width: 24, height: 24)
-                                                            .foregroundColor(Color(uiColor: .CalliopeBlack()))
-                                                    }
-                                                    
-                                                   .padding(.trailing, 16)
-                                                }
+                                                Button(action: {
+                                                                                   // Меняем текущую вкладку на профиль
+                                                                                   selectedTab = .profile
+                                                                               }) {
+                                                                                   ZStack {
+                                                                                       Circle()
+                                                                                           .fill(Color(uiColor: .AuraFlowBlue()))
+                                                                                           .frame(width: 48, height: 48)
+                                                                                       
+                                                                                       Image(systemName: "person")
+                                                                                           .resizable()
+                                                                                           .frame(width: 24, height: 24)
+                                                                                           .foregroundColor(Color(uiColor: .CalliopeBlack()))
+                                                                                   }
+                                                                                   .padding(.trailing, 16)
+                                                                               }
                                             }
                                             
                                         }
                                     }
-                                    .padding(.top, UIScreen.main.bounds.height == 667 ? 100 : 40)
+                                    .padding(.top, (UIApplication.shared.windows.first?.safeAreaInsets.top ?? 40) + 10)
+
                                     .padding(.bottom, 20)
                                     
                                     if isInputActive {
@@ -116,7 +120,7 @@ struct MainView: View {
                                                         Text(tag)
                                                             .padding(.horizontal, 16)
                                                             .padding(.vertical, 6)
-                                                            .background(Color(uiColor: .CalliopeYellow()).opacity(0.2))
+                                                            .background(Color(uiColor: .AuraFlowBlue()).opacity(0.2))
                                                             .cornerRadius(20)
                                                             .foregroundColor(Color(uiColor: .CalliopeWhite()))
                                                             .font(Font.custom("Montserrat-Regular", size: 16))
@@ -182,7 +186,7 @@ struct MainView: View {
                                                 }
                                             }
                                             .padding(.top, 10)
-                                            .padding(.bottom, playbackManager.isMiniPlayerVisible ? (UIScreen.main.bounds.height == 667 ? 220 : 160) : (UIScreen.main.bounds.height == 667 ? 120 : 60)) // Динамическое изменение нижнего отступа
+                                            .padding(.bottom, playbackManager.isMiniPlayerVisible ? (UIScreen.main.bounds.height == 667 ? 220 : 160) : (UIScreen.main.bounds.height == 667 ? 140 : 80)) // Динамическое изменение нижнего отступа
                                         }
                                     }
                                     .padding(.top, -20)
@@ -265,7 +269,7 @@ struct MainView: View {
 //                            .transition(.move(edge: .bottom).combined(with: .opacity))
 //                            .animation(.easeInOut)
                             .frame(width: UIScreen.main.bounds.width)
-                            .padding(.bottom, -15)
+                            .padding(.bottom, 50)
                     }
                 }
                 .ignoresSafeArea(edges: .bottom)
@@ -300,8 +304,4 @@ struct MainView: View {
             }
         }
     }
-}
-
-#Preview {
-    MainView()
 }

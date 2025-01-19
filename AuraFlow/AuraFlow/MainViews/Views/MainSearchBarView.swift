@@ -19,7 +19,7 @@ struct MainSearchBar: View {
                 if searchText.isEmpty {
                     Text("Поиск")
                         .font(Font.custom("Montserrat-Regular", size: 16))
-                        .foregroundColor(.gray)
+                        .foregroundColor(.white)
                 }
                 TextField("", text: $searchText)
                     .foregroundColor(Color(uiColor: .CalliopeWhite()))
@@ -37,7 +37,7 @@ struct MainSearchBar: View {
             .padding(.leading, 8)
         }
         .padding(8)
-        .background(Color(uiColor: .CalliopeDarkGreen()))
+        .background(Color(uiColor: .AuraFlowBlue()))
         .cornerRadius(50)
         .overlay(
             RoundedRectangle(cornerRadius: 50)

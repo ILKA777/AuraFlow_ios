@@ -34,7 +34,8 @@ struct ContentView: View {
                     if shouldShowOnboarding {
                         OnboardingMainView()
                     } else {
-                        MainView()
+                        //MainView()
+                        TabBarView()
                     }
                 }
             }
@@ -43,12 +44,4 @@ struct ContentView: View {
             FLEXManager.shared.showExplorer()
         }
     }
-}
-
-struct MainViewWrapper: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> CustomHostingController<MainView> {
-        return CustomHostingController(rootView: MainView())
-    }
-
-    func updateUIViewController(_ uiViewController: CustomHostingController<MainView>, context: Context) {}
 }

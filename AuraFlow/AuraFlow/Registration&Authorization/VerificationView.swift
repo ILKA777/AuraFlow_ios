@@ -95,7 +95,7 @@ struct VerificationView: View {
                         .foregroundColor(Color(uiColor: .CalliopeWhite()))
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(isCodeComplete() ? Color(uiColor: .CalliopeYellow()) : Color.gray.opacity(0.5))
+                        .background(isCodeComplete() ? Color(uiColor: .AuraFlowBlue()) : Color.gray.opacity(0.5))
                         .cornerRadius(30)
                         .overlay(
                             RoundedRectangle(cornerRadius: 30)

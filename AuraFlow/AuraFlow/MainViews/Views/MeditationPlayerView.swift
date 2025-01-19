@@ -329,7 +329,7 @@ struct TrackListView: View {
                             VStack(alignment: .leading) {
                                 Text(meditation.title)
                                     .font(Font.custom("Montserrat-Semibold", size: 19))
-                                    .foregroundColor(isPlayingThisMeditation(meditation) ? Color(uiColor: .CalliopeYellow()) : .white)  // Изменение цвета текущего трека
+                                    .foregroundColor(isPlayingThisMeditation(meditation) ? Color(uiColor: .AuraFlowBlue()) : .white)  // Изменение цвета текущего трека
                                 
                                 Text(meditation.date)
                                     .font(Font.custom("Montserrat-Regular", size: 14))
@@ -338,7 +338,7 @@ struct TrackListView: View {
                             Spacer()
                             if isPlayingThisMeditation(meditation) {
                                 Image(systemName: "play.circle.fill")
-                                    .foregroundColor(Color(uiColor: .CalliopeYellow()))
+                                    .foregroundColor(Color(uiColor: .AuraFlowBlue()))
                             } else {
                                 Text(meditation.duration)
                                     .font(Font.custom("Montserrat-Regular", size: 14))

@@ -11,7 +11,8 @@ struct PersonalisedСompilationView: View {
     @ObservedObject var viewModel: ResponseViewModel
     @StateObject private var playbackManager = PlaybackManager.shared
     @State private var isNavigatingToMainView = false // Состояние для перехода на MainView
-
+    @State private var selectedTab: TabBarView.Tab = .main
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -65,7 +66,7 @@ struct PersonalisedСompilationView: View {
                 Spacer()
                 
                 // Кнопка возврата на главную
-                NavigationLink(destination: MainView(), isActive: $isNavigatingToMainView) {
+                NavigationLink(destination: MainView(selectedTab: $selectedTab), isActive: $isNavigatingToMainView) {
                     Text("На главную")
                         .font(Font.custom("Montserrat-Regular", size: 18))
                         .foregroundColor(Color(uiColor: .CalliopeWhite()))

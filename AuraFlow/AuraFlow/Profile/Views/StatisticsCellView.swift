@@ -20,7 +20,7 @@ struct StatisticsCellView: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
                         .strokeBorder(
-                            Color(uiColor: .CalliopeYellow()),
+                            Color(uiColor: .AuraFlowBlue()),
                             lineWidth: 1 // Adjust the border thickness as needed
                         )
                 )

@@ -15,11 +15,11 @@ struct MiniPlayerView: View {
     var body: some View {
         ZStack {
             // Размытие фона
-            BlurView(style: .systemMaterial)
-                .blur(radius: 7)
+            BlurView(style: .systemThinMaterial)
+               // .blur(radius: 7)
             
             // Полупрозрачный белый фон
-            Color(uiColor: .CalliopeGreen()).opacity(0.14)
+            
             
             
             
@@ -68,7 +68,7 @@ struct MiniPlayerView: View {
                                 minValue: 0.0,
                                 maxValue: playbackManager.duration,
                                 thumbColor: .clear,
-                                minTrackColor: .CalliopeYellow(),
+                                minTrackColor: .AuraFlowBlue(),
                                 maxTrackColor: .lightGray
                             )
                             .frame(height: 20)

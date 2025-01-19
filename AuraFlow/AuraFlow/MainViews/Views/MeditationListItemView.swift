@@ -50,7 +50,7 @@ struct MeditationListItemView: View {
             }
             .padding(.horizontal)
             .padding(.vertical, 8)
-            .background(isPlayingThisMeditation ? Color(uiColor: .CalliopeYellow()).opacity(0.2) : Color.clear) // Фон для выделения содержимого
+            .background(isPlayingThisMeditation ? Color(uiColor: .AuraFlowBlue()).opacity(0.2) : Color.clear) // Фон для выделения содержимого
             .contentShape(Rectangle()) // Для правильной области нажатия
 
             Divider()

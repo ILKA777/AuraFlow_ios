@@ -32,7 +32,7 @@ struct UserInfoCellView: View {
                     .font(Font.custom("Montserrat-SemiBold", size: 20))
                     .foregroundColor(Color(uiColor: .CalliopeBlack()))
                 
-                Text(user.phoneNumber)
+                Text(user.email)
                     .font(Font.custom("Montserrat-Regular", size: 16))
                     .foregroundColor(Color(uiColor: .CalliopeBlack()))
             }
@@ -50,7 +50,7 @@ struct UserInfoCellView: View {
         }
         .padding()
         .background(
-            Color(uiColor: .CalliopeYellow())
+            Color(uiColor: .AuraFlowBlue())
             .clipShape(RoundedRectangle(cornerRadius: 20))
         )
         .shadow(color: Color(uiColor: .CalliopeBlack()).opacity(0.1), radius: 5, x: 0, y: 4)
@@ -82,7 +82,7 @@ struct UserInfoCellView: View {
     UserInfoCellView(
         user: User(
             name: "Лилия",
-            phoneNumber: "+7 (999) 000-00-00",
+            email: "test@mail.ru",
             imageName: "meditationPerson" // Replace with your actual image name
         )
     )

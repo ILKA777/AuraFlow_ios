@@ -7,26 +7,81 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		041AA2B22D3D7932004170BF /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 041AA2B12D3D7932004170BF /* FirebaseAnalytics */; };
+		041AA2B42D3D7932004170BF /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 041AA2B32D3D7932004170BF /* FirebaseMessaging */; };
+		041BEF232D3D803600DFBB26 /* AuraFlowWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 041BEF162D3D803500DFBB26 /* AuraFlowWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		0444E4812D1D75D000FAF9D1 /* FLEX in Frameworks */ = {isa = PBXBuildFile; productRef = 0444E4802D1D75D000FAF9D1 /* FLEX */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		041BEF212D3D803600DFBB26 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0444E1872D1D709A00FAF9D1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 041BEF152D3D803500DFBB26;
+			remoteInfo = "AuraFlowWatch Watch App";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		044D06932D3D06CA00BEE600 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				041BEF232D3D803600DFBB26 /* AuraFlowWatch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		041BEF162D3D803500DFBB26 /* AuraFlowWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AuraFlowWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0444E18F2D1D709A00FAF9D1 /* AuraFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AuraFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		04671A082D3AA3E500432D7B /* Exceptions for "AuraFlow" folder in "AuraFlow" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 0444E18E2D1D709A00FAF9D1 /* AuraFlow */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		041BEF172D3D803500DFBB26 /* AuraFlowWatch Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "AuraFlowWatch Watch App";
+			sourceTree = "<group>";
+		};
 		0444E1912D1D709A00FAF9D1 /* AuraFlow */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				04671A082D3AA3E500432D7B /* Exceptions for "AuraFlow" folder in "AuraFlow" target */,
+			);
 			path = AuraFlow;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		041BEF132D3D803500DFBB26 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0444E18C2D1D709A00FAF9D1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				041AA2B42D3D7932004170BF /* FirebaseMessaging in Frameworks */,
+				041AA2B22D3D7932004170BF /* FirebaseAnalytics in Frameworks */,
 				0444E4812D1D75D000FAF9D1 /* FLEX in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -38,6 +93,7 @@
 			isa = PBXGroup;
 			children = (
 				0444E1912D1D709A00FAF9D1 /* AuraFlow */,
+				041BEF172D3D803500DFBB26 /* AuraFlowWatch Watch App */,
 				0444E1902D1D709A00FAF9D1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -46,6 +102,7 @@
 			isa = PBXGroup;
 			children = (
 				0444E18F2D1D709A00FAF9D1 /* AuraFlow.app */,
+				041BEF162D3D803500DFBB26 /* AuraFlowWatch Watch App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -53,6 +110,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		041BEF152D3D803500DFBB26 /* AuraFlowWatch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 041BEF242D3D803600DFBB26 /* Build configuration list for PBXNativeTarget "AuraFlowWatch Watch App" */;
+			buildPhases = (
+				041BEF122D3D803500DFBB26 /* Sources */,
+				041BEF132D3D803500DFBB26 /* Frameworks */,
+				041BEF142D3D803500DFBB26 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				041BEF172D3D803500DFBB26 /* AuraFlowWatch Watch App */,
+			);
+			name = "AuraFlowWatch Watch App";
+			packageProductDependencies = (
+			);
+			productName = "AuraFlowWatch Watch App";
+			productReference = 041BEF162D3D803500DFBB26 /* AuraFlowWatch Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
 		0444E18E2D1D709A00FAF9D1 /* AuraFlow */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0444E1A32D1D709B00FAF9D1 /* Build configuration list for PBXNativeTarget "AuraFlow" */;
@@ -60,10 +139,12 @@
 				0444E18B2D1D709A00FAF9D1 /* Sources */,
 				0444E18C2D1D709A00FAF9D1 /* Frameworks */,
 				0444E18D2D1D709A00FAF9D1 /* Resources */,
+				044D06932D3D06CA00BEE600 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				041BEF222D3D803600DFBB26 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				0444E1912D1D709A00FAF9D1 /* AuraFlow */,
@@ -71,6 +152,8 @@
 			name = AuraFlow;
 			packageProductDependencies = (
 				0444E4802D1D75D000FAF9D1 /* FLEX */,
+				041AA2B12D3D7932004170BF /* FirebaseAnalytics */,
+				041AA2B32D3D7932004170BF /* FirebaseMessaging */,
 			);
 			productName = AuraFlow;
 			productReference = 0444E18F2D1D709A00FAF9D1 /* AuraFlow.app */;
@@ -86,6 +169,9 @@
 				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1620;
 				TargetAttributes = {
+					041BEF152D3D803500DFBB26 = {
+						CreatedOnToolsVersion = 16.2;
+					};
 					0444E18E2D1D709A00FAF9D1 = {
 						CreatedOnToolsVersion = 16.2;
 					};
@@ -102,6 +188,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				0444E47F2D1D75D000FAF9D1 /* XCRemoteSwiftPackageReference "FLEX" */,
+				041AA2B02D3D7932004170BF /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0444E1902D1D709A00FAF9D1 /* Products */;
@@ -109,11 +196,19 @@
 			projectRoot = "";
 			targets = (
 				0444E18E2D1D709A00FAF9D1 /* AuraFlow */,
+				041BEF152D3D803500DFBB26 /* AuraFlowWatch Watch App */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		041BEF142D3D803500DFBB26 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0444E18D2D1D709A00FAF9D1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -124,6 +219,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		041BEF122D3D803500DFBB26 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0444E18B2D1D709A00FAF9D1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -133,7 +235,76 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		041BEF222D3D803600DFBB26 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 041BEF152D3D803500DFBB26 /* AuraFlowWatch Watch App */;
+			targetProxy = 041BEF212D3D803600DFBB26 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		041BEF252D3D803600DFBB26 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"AuraFlowWatch Watch App/Preview Content\"";
+				DEVELOPMENT_TEAM = 42UB5T24AY;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = AuraFlowWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ilkaIlka.AuraFlow;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ilkaIlka.AuraFlow.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.2;
+			};
+			name = Debug;
+		};
+		041BEF262D3D803600DFBB26 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"AuraFlowWatch Watch App/Preview Content\"";
+				DEVELOPMENT_TEAM = 42UB5T24AY;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = AuraFlowWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ilkaIlka.AuraFlow;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ilkaIlka.AuraFlow.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 11.2;
+			};
+			name = Release;
+		};
 		0444E1A12D1D709B00FAF9D1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -257,10 +428,13 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AuraFlow/Preview Content\"";
-				DEVELOPMENT_TEAM = TLYCHDJ6FK;
+				DEVELOPMENT_TEAM = 42UB5T24AY;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AuraFlow/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Aura Flow";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Мы используем ваши данные о здоровье для отображения пульса.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Мы используем ваши данные о здоровье для обновления информации о пульсе.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -276,7 +450,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = ilka.AuraFlow;
+				PRODUCT_BUNDLE_IDENTIFIER = ilkaIlka.AuraFlow;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
@@ -296,10 +470,13 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AuraFlow/Preview Content\"";
-				DEVELOPMENT_TEAM = TLYCHDJ6FK;
+				DEVELOPMENT_TEAM = 42UB5T24AY;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AuraFlow/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Aura Flow";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Мы используем ваши данные о здоровье для отображения пульса.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Мы используем ваши данные о здоровье для обновления информации о пульсе.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -315,7 +492,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = ilka.AuraFlow;
+				PRODUCT_BUNDLE_IDENTIFIER = ilkaIlka.AuraFlow;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
@@ -329,6 +506,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		041BEF242D3D803600DFBB26 /* Build configuration list for PBXNativeTarget "AuraFlowWatch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				041BEF252D3D803600DFBB26 /* Debug */,
+				041BEF262D3D803600DFBB26 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		0444E18A2D1D709A00FAF9D1 /* Build configuration list for PBXProject "AuraFlow" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -350,6 +536,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		041AA2B02D3D7932004170BF /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.7.0;
+			};
+		};
 		0444E47F2D1D75D000FAF9D1 /* XCRemoteSwiftPackageReference "FLEX" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/FLEXTool/FLEX.git";
@@ -361,6 +555,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		041AA2B12D3D7932004170BF /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 041AA2B02D3D7932004170BF /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		041AA2B32D3D7932004170BF /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 041AA2B02D3D7932004170BF /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
 		0444E4802D1D75D000FAF9D1 /* FLEX */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 0444E47F2D1D75D000FAF9D1 /* XCRemoteSwiftPackageReference "FLEX" */;

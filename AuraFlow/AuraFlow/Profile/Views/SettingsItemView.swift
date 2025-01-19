@@ -61,7 +61,7 @@ struct SettingsItemView<Destination: View>: View {
                     RoundedRectangle(cornerRadius: geometry.size.height / 2)
                         .strokeBorder(
                             LinearGradient(
-                                gradient: Gradient(colors: [Color(uiColor: .CalliopeYellow()).opacity(0.9), Color.cyan.opacity(0.9)]),
+                                gradient: Gradient(colors: [Color(uiColor: .AuraFlowBlue()).opacity(0.9), Color.cyan.opacity(0.9)]),
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),

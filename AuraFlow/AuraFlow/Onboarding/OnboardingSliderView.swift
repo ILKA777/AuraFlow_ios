@@ -66,11 +66,11 @@ struct OnboardingSliderView<Content>: View where Content: View {
                 HStack {
                     PageControlView(index: $index, maxIndex: viewModel.onboardingData.isEmpty ? 0 : viewModel.onboardingData.count - 1) {
                         RoundedRectangle(cornerRadius: 4)
-                            .fill(Color(uiColor: .CalliopeYellow()))
+                            .fill(Color(uiColor: .AuraFlowBlue()))
                             .frame(width: 35, height: 6)
                     } deselectedShape: {
                         Circle()
-                            .fill(Color(uiColor: .CalliopeYellow())).opacity(0.4)
+                            .fill(Color(uiColor: .AuraFlowBlue())).opacity(0.4)
                             .frame(width: 6)
                     }
                     .offset(y: index == viewModel.onboardingData.count - 1 ? 20 : 0)
@@ -87,7 +87,7 @@ struct OnboardingSliderView<Content>: View where Content: View {
                                 .padding()
                         }
                     } else {
-                        NavigationLink(destination: MainView()
+                        NavigationLink(destination: TabBarView()
                             .ignoresSafeArea(.keyboard)
                             .navigationBarBackButtonHidden(true)) {
                             HStack(spacing: 25) {
@@ -96,7 +96,7 @@ struct OnboardingSliderView<Content>: View where Content: View {
                                     .foregroundColor(Color(uiColor: .CalliopeBlack()))
                                 ZStack {
                                     Circle()
-                                        .fill(Color(uiColor: .CalliopeYellow()).opacity(0.4))  // Полупрозрачный круг
+                                        .fill(Color(uiColor: .AuraFlowBlue()).opacity(0.4))  // Полупрозрачный круг
                                         .frame(width: 64, height: 64)    // Размер круга
                                     Image(systemName: "arrow.right")
                                         .foregroundColor(Color(uiColor: .CalliopeBlack()))  // Цвет стрелки

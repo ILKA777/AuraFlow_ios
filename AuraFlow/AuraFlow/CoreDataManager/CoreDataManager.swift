@@ -21,11 +21,11 @@ class CoreDataManager {
         }
     }
     
-    func saveUser(name: String, phoneNumber: String) {
+    func saveUser(name: String, email: String) {
         let context = persistentContainer.viewContext
         let user = UserCoreData(context: context)
         user.name = name
-        user.phoneNumber = phoneNumber
+        user.email = email
         
         do {
             try context.save()
