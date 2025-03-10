@@ -7,15 +7,16 @@
 
 import SwiftUI
 import AVKit
+import Charts
 
 enum MediaType {
     case audio
     case video
 }
 
-
 struct MeditationPlayerView: View {
     @StateObject private var playbackManager = PlaybackManager.shared
+    @StateObject private var heartRateReceiver = HeartRateReceiver()
     
     let meditation: Meditation
     let album: MeditationAlbum
@@ -32,15 +33,16 @@ struct MeditationPlayerView: View {
     
     @State private var areControlsVisible = true
     
-    @State private var scrollOffset: CGFloat = 0.0
-    @State private var scrollingRight: Bool = true
-    @State private var timer: Timer? = nil
+    @State private var heartRateHistory: [Double] = []
+    // Новые состояния для итогов медитации
+    @State private var startHeartRate: Double = 0
+    @State private var endHeartRate: Double = 0
+    @State private var showSummary: Bool = false
 
-    
     init(meditation: Meditation, album: MeditationAlbum) {
         self.meditation = meditation
         self.album = album
-        _currentMeditation = State(initialValue: meditation)  // Устанавливаем начальный трек
+        _currentMeditation = State(initialValue: meditation)
     }
     
     var body: some View {
@@ -70,6 +72,54 @@ struct MeditationPlayerView: View {
                 .onAppear {
                     playbackManager.stopCurrentAudio()
                 }
+                // В правом верхнем углу отображаем пульс и график
+                VStack {
+                    HStack {
+                        Spacer()
+                        VStack {
+                            Text("Пульс")
+                                .font(.caption)
+                                .foregroundColor(.white)
+                                .padding(.top, 4)
+                            
+                            Text("\(Int(heartRateReceiver.heartRate)) BPM")
+                                .font(.headline)
+                                .foregroundColor(.red)
+                                .padding(.vertical, 6)
+                                .padding(.horizontal, 12)
+                                .background(Color.black.opacity(0.7))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                .shadow(radius: 5)
+                            
+                            Chart {
+                                ForEach(heartRateHistory.indices, id: \.self) { index in
+                                    LineMark(
+                                        x: .value("Time", index),
+                                        y: .value("Heart Rate", heartRateHistory[index])
+                                    )
+                                    .interpolationMethod(.monotone)
+                                    .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                                    .foregroundStyle(LinearGradient(
+                                        gradient: Gradient(colors: [.red, .orange]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    ))
+                                }
+                            }
+                            .chartYAxis {
+                                AxisMarks(position: .leading, values: .automatic)
+                            }
+                            .chartXScale(domain: 0...heartRateHistory.count + 30)
+                            .frame(width: 150, height: 100)
+                            .padding(.horizontal, 10)
+                            .background(Color.black.opacity(0.6))
+                            .cornerRadius(12)
+                            .shadow(radius: 5)
+                        }
+                        .padding()
+                    }
+                    Spacer()
+                }
             } else {
                 Image(uiImage: currentMeditation.image)
                     .resizable()
@@ -83,26 +133,25 @@ struct MeditationPlayerView: View {
                 VStack {
                     HStack {
                         Button(action: {
-                                if isVideoPlaying {
-                                    // Останавливаем видео и переключаемся на аудио
-                                    isVideoPlaying = false
-                                    isMediaPlaying = false
-                                    currentMediaType = .audio
-                                    playbackManager.seek(to: currentTime)
-                                    playbackManager.togglePlayPause() // Включаем аудио воспроизведение
-                                } else {
-                                    dismiss() // Закрываем экран, если видео не воспроизводится
-                                }
-                            }) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color.gray.opacity(0.3))
-                                        .frame(width: 48, height: 48)
-                                    Image(systemName: "chevron.left")
-                                        .foregroundColor(.white)
-                                }
+                            if isVideoPlaying {
+                                isVideoPlaying = false
+                                isMediaPlaying = false
+                                currentMediaType = .audio
+                                playbackManager.seek(to: currentTime)
+                                playbackManager.togglePlayPause()
+                            } else {
+                                dismiss()
                             }
-                            .padding(.leading, 16)
+                        }) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.gray.opacity(0.3))
+                                    .frame(width: 48, height: 48)
+                                Image(systemName: "chevron.left")
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .padding(.leading, 16)
                         
                         Spacer()
                         
@@ -122,15 +171,12 @@ struct MeditationPlayerView: View {
                     .padding(.top, 30)
                     .fullScreenCover(isPresented: $showTrackList) {
                         TrackListView(album: album, onTrackSelected: { selectedTrack in
-                            // Останавливаем текущее видео, если оно воспроизводится
                             if isVideoPlaying {
                                 isVideoPlaying = false
                                 isMediaPlaying = false
                                 currentMediaType = .audio
                                 playbackManager.stopCurrentAudio()
                             }
-                            
-                            // Обновляем текущий трек и перезапускаем плеер
                             currentMeditation = selectedTrack
                             Task {
                                 await playbackManager.playAlbum(from: album, startingAt: selectedTrack)
@@ -234,6 +280,16 @@ struct MeditationPlayerView: View {
                                     .foregroundColor(.white)
                             }
                         }
+                        .padding(.bottom, 20)
+                        
+                        // Кнопка для завершения медитации
+                        Button(action: finishMeditation) {
+                            Text("Завершить медитацию")
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(Color.blue)
+                                .cornerRadius(8)
+                        }
                         .padding(.bottom, 40)
                     }
                     .padding(.horizontal, 20)
@@ -246,9 +302,24 @@ struct MeditationPlayerView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             playbackManager.isMiniPlayerVisible = false
+            // Сохраняем начальное значение пульса при запуске медитации
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                    startHeartRate = heartRateReceiver.heartRate
+                }
+            
             if currentMediaType == .audio && !playbackManager.isPlaying {
                 playbackManager.togglePlayPause()
                 isMediaPlaying = playbackManager.isPlaying
+            }
+            
+            // Обновляем историю пульса каждые 2 секунды
+            Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
+                let heartRate = heartRateReceiver.heartRate
+                heartRateHistory.append(heartRate)
+                if heartRateHistory.count > 20 {
+                    heartRateHistory.removeFirst()
+                }
             }
         }
         .onDisappear {
@@ -263,6 +334,10 @@ struct MeditationPlayerView: View {
             if currentMediaType == .audio {
                 mediaDuration = newDuration
             }
+        }
+        // Sheet с итогами медитации
+        .sheet(isPresented: $showSummary) {
+            MeditationSummaryView(startHeartRate: startHeartRate, endHeartRate: endHeartRate, heartRateHistory: heartRateHistory)
         }
     }
     
@@ -288,78 +363,13 @@ struct MeditationPlayerView: View {
         let totalSeconds = Int(seconds)
         return String(format: "%02d:%02d", totalSeconds / 60, totalSeconds % 60)
     }
-}
-
-
-import SwiftUI
-
-struct TrackListView: View {
-    let album: MeditationAlbum
-    let onTrackSelected: (Meditation) -> Void
-    @ObservedObject private var playbackManager = PlaybackManager.shared
-    @State private var selectedMeditation: Meditation? = nil  // Состояние для хранения выбранной медитации
-    @Environment(\.dismiss) private var dismiss
     
-    var body: some View {
-        VStack(alignment: .leading) {
-            HStack {
-                Button(action: {
-                    dismiss()  // Закрытие треклиста
-                }) {
-                    Image(systemName: "chevron.left")
-                        .font(.title2)
-                        .foregroundColor(.white)
-                }
-                .padding()
-                
-                Text(album.title)
-                    .font(Font.custom("Montserrat-Semibold", size: 20))
-                    .padding()
-                
-                Spacer()
-            }
-            
-            List {
-                ForEach(album.tracks, id: \.id) { meditation in
-                    Button(action: {
-                        // Запуск альбома с выбранного трека
-                        onTrackSelected(meditation)
-                    }) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(meditation.title)
-                                    .font(Font.custom("Montserrat-Semibold", size: 19))
-                                    .foregroundColor(isPlayingThisMeditation(meditation) ? Color(uiColor: .AuraFlowBlue()) : .white)  // Изменение цвета текущего трека
-                                
-                                Text(meditation.date)
-                                    .font(Font.custom("Montserrat-Regular", size: 14))
-                                    .foregroundColor(.gray)
-                            }
-                            Spacer()
-                            if isPlayingThisMeditation(meditation) {
-                                Image(systemName: "play.circle.fill")
-                                    .foregroundColor(Color(uiColor: .AuraFlowBlue()))
-                            } else {
-                                Text(meditation.duration)
-                                    .font(Font.custom("Montserrat-Regular", size: 14))
-                                    .foregroundColor(.gray)
-                            }
-                        }
-                        .padding(.vertical, 8)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-            }
-            .listStyle(PlainListStyle())
-            .scrollContentBackground(.hidden)  // Убираем фоновый цвет списка
-            .background(Color.clear)  // Прозрачный фон
-        }
-        .background(Color.black.opacity(0.4).edgesIgnoringSafeArea(.all))  // Полупрозрачный фон для стиля
-    }
-    
-    // Проверка, играется ли текущий трек
-    private func isPlayingThisMeditation(_ meditation: Meditation) -> Bool {
-        playbackManager.currentMeditation?.id == meditation.id
+    // Функция завершения медитации:
+    // Сохраняет конечный пульс и показывает экран с итогами
+    private func finishMeditation() {
+        // Сохраняем конечное значение пульса
+        endHeartRate = heartRateReceiver.heartRate
+        showSummary = true
     }
 }
 

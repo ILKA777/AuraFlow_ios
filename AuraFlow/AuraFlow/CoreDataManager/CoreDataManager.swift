@@ -26,6 +26,7 @@ class CoreDataManager {
         let user = UserCoreData(context: context)
         user.name = name
         user.email = email
+        user.imageName = "meditationPerson"
         
         do {
             try context.save()

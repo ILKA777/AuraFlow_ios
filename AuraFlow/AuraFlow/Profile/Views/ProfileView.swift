@@ -11,32 +11,39 @@ import HealthKit
 struct ProfileView: View {
     @State private var isAppleHealthConnected = false
     @Environment(\.dismiss) private var dismiss
-    @State private var shouldShowHeartRateView = false // Флаг для навигации
+    @State private var shouldShowBreathingPractice = false
     @StateObject private var playbackManager = PlaybackManager.shared
-    @State private var user = CoreDataManager.shared.fetchUser()
     @AppStorage("isUserLoggedIn") private var isUserLoggedIn = false
-
+    @AppStorage("authToken") private var authToken: String = "" // Храним токен
+    @State private var user: User? = nil // Пользовательская модель для отображения данных
+    @State private var isLoading = true // Состояние загрузки данных
+    
+    @State private var networkServiceUrl = NetworkService.shared.url
+    
     private let healthKitManager = HealthKitManager() // Экземпляр менеджера HealthKit
-
+    private var urlSessionTask: URLSessionDataTask? // Для отмены запроса при уходе с экрана
+    
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Top Profile Card
+                    // Карточка профиля
                     ZStack {
-                        if !isUserLoggedIn {
-                            UserInfoCellView(user: User(name: "······", email: "test@mail.ru", imageName: "meditationPerson"))
+                        if isLoading {
+                            ProgressView("Загрузка данных...")
+                        } else if isUserLoggedIn == false {
+                            UserInfoCellView(user: User(name: "······", email: "+7 (999) 000-00-00", imageName: "meditationPerson"))
                                 .padding(.horizontal)
                                 .padding(.top, 20)
                                 .blur(radius: 3)
-
+                            
                             NavigationLink(destination: RegistrationView(isUserLoggedIn: $isUserLoggedIn)) {
                                 HStack {
                                     Image(systemName: "lock.fill")
                                         .font(Font.custom("Montserrat-Semibold", size: 22))
                                         .foregroundColor(Color(uiColor: .CalliopeBlack()))
                                         .offset(x: 15)
-
+                                    
                                     Text("Выполните вход в систему")
                                         .font(Font.custom("Montserrat-Regular", size: 20))
                                         .foregroundColor(Color(uiColor: .CalliopeBlack()))
@@ -50,26 +57,26 @@ struct ProfileView: View {
                             .padding(.horizontal)
                             .padding(.top, 20)
                         } else {
-                            if let user = user, let name = user.name, let email = user.email {
-                                UserInfoCellView(user: User(name: name, email: email, imageName: "meditationPerson"))
+                            if let user = user {
+                                UserInfoCellView(user: user)
                                     .padding(.horizontal)
                                     .padding(.top, 20)
                             }
                         }
                     }
-
-                    // Statistics Card
+                    
+                    // Карточка статистики
                     ZStack {
-                        if !isUserLoggedIn {
+                        if isUserLoggedIn == false {
                             StatisticsCellView()
                                 .blur(radius: 3)
-
+                            
                             HStack {
                                 Image(systemName: "lock.fill")
                                     .font(Font.custom("Montserrat-Semibold", size: 22))
                                     .foregroundColor(Color(uiColor: .CalliopeBlack()))
                                     .offset(x: 15)
-
+                                
                                 Text("Статистика недоступна")
                                     .font(Font.custom("Montserrat-Regular", size: 20))
                                     .foregroundColor(Color(uiColor: .CalliopeBlack()))
@@ -83,52 +90,58 @@ struct ProfileView: View {
                             StatisticsCellView()
                         }
                     }
-
-                    // Apple Health Toggle
-                    Toggle(isOn: $isAppleHealthConnected) {
-                        Text("Apple Health")
-                            .font(Font.custom("Montserrat-Regular", size: 20))
-                            .foregroundColor(Color(uiColor: .CalliopeWhite()))
-                            .offset(x: 20)
-                    }
-                    .onChange(of: isAppleHealthConnected) { newValue in
-                        if newValue {
-                            requestHealthKitAccess()
+                    
+                    // Список настроек
+                    VStack(spacing: 20) {
+                        SettingsItemView(
+                            title: "Подписка и покупки",
+                            icon: "chevron.right",
+                            destination: SubscriptionView()
+                        )
+                        
+                        SettingsItemView(
+                            title: "Напоминания",
+                            icon: "chevron.right",
+                            destination: RemindersView()
+                        )
+                        
+                        Toggle(isOn: $isAppleHealthConnected) {
+                            Text("Apple Health")
+                                .font(Font.custom("Montserrat-Regular", size: 20))
+                                .foregroundColor(Color(uiColor: .CalliopeWhite()))
+                                .offset(x: 20)
                         }
+                        .onChange(of: isAppleHealthConnected) { newValue in
+                            if newValue {
+                                requestHealthKitAccess()
+                            }
+                        }
+                        .toggleStyle(SwitchToggleStyle(tint: Color.green))
+                        .padding()
+                        .offset(x: -10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 30)
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
+                        .background(
+                            RoundedRectangle(cornerRadius: 30)
+                                .fill(Color(uiColor: .CalliopeBlack()).opacity(0.1))
+                        )
+                        .padding(.horizontal)
                     }
-                    .toggleStyle(SwitchToggleStyle(tint: Color.green))
-                    .padding()
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 30)
-                            .stroke(Color.gray, lineWidth: 1)
-                    )
-                    .background(
-                        RoundedRectangle(cornerRadius: 30)
-                            .fill(Color(uiColor: .CalliopeBlack()).opacity(0.1))
-                    )
-                    .padding(.horizontal)
-
-                    // Footer Options
+                    
+                    // Footer
                     VStack(alignment: .leading, spacing: 10) {
                         Button(action: {
-                                               healthKitManager.requestAuthorization { success in
-                                                   if success {
-                                                       shouldShowHeartRateView = true
-                                                   } else {
-                                                       print("HealthKit authorization failed.")
-                                                   }
-                                               }
-                                           }) {
-                                               Text("Test Apple Health")
-                                                   .font(Font.custom("Montserrat-Regular", size: 20))
-                                                   .foregroundColor(Color.white)
-                                                   .padding()
-                                                   .frame(maxWidth: .infinity)
-                                                   .background(Color.blue)
-                                                   .cornerRadius(10)
-                                           }
-                        .padding(.bottom, -25)
-
+                            print("О нас tapped")
+                        }) {
+                            Text("О нас")
+                                .font(Font.custom("Montserrat-Regular", size: 20))
+                                .foregroundColor(Color(uiColor: .CalliopeWhite()))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding()
+                        }
+                        
                         Button(action: {
                             print("Восстановить покупки tapped")
                         }) {
@@ -150,38 +163,106 @@ struct ProfileView: View {
                     .scaledToFill()
                     .ignoresSafeArea()
             )
-            .navigationBarTitle("Профиль", displayMode: .inline)
+            .navigationBarBackButtonHidden(true)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("Профиль")
                         .font(Font.custom("Montserrat-Semibold", size: 20))
                         .foregroundColor(Color(uiColor: .CalliopeWhite()))
                 }
+
             }
             .onAppear {
                 playbackManager.isMiniPlayerVisible = false
-                user = CoreDataManager.shared.fetchUser()
+                fetchUserData()
             }
             .onDisappear {
                 playbackManager.isMiniPlayerVisible = true
-            }
-            .sheet(isPresented: $shouldShowHeartRateView) {
-                HeartRateView()
+                urlSessionTask?.cancel()
             }
         }
     }
+    
+    private func fetchUserData() {
+        guard !authToken.isEmpty else {
+            print("Токен отсутствует")
+            DispatchQueue.main.async {
+                self.isLoading = false
+            }
+            return
+        }
+        
+        guard let url = URL(string: networkServiceUrl + "user") else {
+            print("Некорректный URL")
+            DispatchQueue.main.async {
+                self.isLoading = false
+            }
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        
+        // Начинаем загрузку данных
+        DispatchQueue.main.async {
+            self.isLoading = true
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Ошибка получения данных пользователя: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                }
+                return
+            }
+            
+            guard let data = data else {
+                print("Пустой ответ сервера")
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                }
+                return
+            }
+            
+            do {
+                // Парсим JSON-ответ
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                   let name = json["name"] as? String,
+                   let email = json["email"] as? String {
+                    DispatchQueue.main.async {
+                        self.user = User(name: name, email: email, imageName: "meditationPerson")
+                        self.isLoading = false
+                    }
+                } else {
+                    print("Некорректный формат данных")
+                    DispatchQueue.main.async {
+                        self.isLoading = false
+                    }
+                }
+            } catch {
+                print("Ошибка парсинга JSON: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                }
+            }
+        }.resume()
+    }
 
+
+    
     private func requestHealthKitAccess() {
         healthKitManager.requestAuthorization { success in
-            if success {
-                shouldShowHeartRateView = true
-            } else {
-                isAppleHealthConnected = false // Отключить toggle, если доступ не предоставлен
+            if !success {
+                DispatchQueue.main.async {
+                    self.isAppleHealthConnected = false
+                }
                 print("HealthKit authorization failed.")
             }
         }
     }
-
 }
 
 

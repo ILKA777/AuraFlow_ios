@@ -7,19 +7,21 @@
 
 
 import SwiftUI
+import UserNotifications
 
 struct RemindersView: View {
     
-    @Environment(\.dismiss) private var dismiss // Access the dismiss environment action
+    @Environment(\.dismiss) private var dismiss
     
-    // State variables for toggles and reminders
+    // Состояния для переключателей и настроек уведомлений
     @State private var isMotivationEnabled = true
     @State private var isFocusEnabled = true
     @State private var isAppLaunchFocusEnabled = true
     
     @State private var motivationStartTime = Date()
     @State private var motivationEndTime = Calendar.current.date(byAdding: .hour, value: 1, to: Date())!
-    @State private var motivationFrequency = 2
+    // Значение "периодичность" используется для расчёта интервала между уведомлениями
+    @State private var motivationFrequency = 4
     
     @State private var focusStartTime = Date()
     @State private var focusEndTime = Calendar.current.date(byAdding: .hour, value: 1, to: Date())!
@@ -27,13 +29,12 @@ struct RemindersView: View {
     
     @State private var reminders: [Reminder] = []
     
-    // State variables for showing date pickers
+    // Состояния для отображения пикеров времени
     @State private var isStartTimePickerVisible = false
     @State private var isEndTimePickerVisible = false
     
     var body: some View {
         VStack {
-            // Reminder settings
             VStack(spacing: 20) {
                 reminderCard(
                     title: "Уведомления",
@@ -44,7 +45,7 @@ struct RemindersView: View {
                     isStartTimePickerVisible: $isStartTimePickerVisible,
                     isEndTimePickerVisible: $isEndTimePickerVisible
                 )
-
+                
                 reminderCard(
                     title: "Практика дыхания",
                     isEnabled: $isFocusEnabled,
@@ -58,10 +59,9 @@ struct RemindersView: View {
             }
             .offset(y: 20)
             .padding(.horizontal)
-
+            
             Spacer()
-
-            // Save button
+            
             Button(action: saveReminders) {
                 Text("Сохранить")
                     .font(.system(size: 20))
@@ -70,25 +70,25 @@ struct RemindersView: View {
                     .padding()
                     .background(
                         Color(uiColor: .AuraFlowBlue())
-                        .cornerRadius(30)
+                            .cornerRadius(30)
                     )
                     .padding(.horizontal, 20)
             }
             .padding(.bottom, 20)
         }
         .background(
-            Image("default") // Replace with your image asset name
+            Image("default")
                 .resizable()
                 .scaledToFill()
                 .ignoresSafeArea()
         )
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true) // Hide default back button title
+        .navigationBarBackButtonHidden(true)
         .toolbar {
-            ToolbarItem(placement: .principal) { // Use .principal to customize the title
+            ToolbarItem(placement: .principal) {
                 Text("Напоминания")
                     .font(.headline)
-                    .foregroundColor(Color(uiColor: .CalliopeWhite())) // Set the desired color here
+                    .foregroundColor(Color(uiColor: .CalliopeWhite()))
             }
             
             ToolbarItem(placement: .navigationBarLeading) {
@@ -101,27 +101,143 @@ struct RemindersView: View {
                 }
             }
         }
+        // При изменении состояния уведомлений проверяем разрешения, сохраняем настройки и убираем уведомления при выключении
+        .onChange(of: isMotivationEnabled) { newValue in
+            if newValue {
+                requestNotificationPermissionIfNeeded()
+            } else {
+                // Если уведомления выключены, удаляем все запланированные уведомления
+                UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+                print("Уведомления отключены: удалены все запланированные уведомления")
+            }
+            saveSettings()
+        }
         .onChange(of: isFocusEnabled) { newValue in
             if newValue {
-                isAppLaunchFocusEnabled = true // Set to true when focus practice is enabled
+                isAppLaunchFocusEnabled = true
             }
+            saveSettings()
         }
+        .onChange(of: isAppLaunchFocusEnabled) { _ in saveSettings() }
+        .onAppear(perform: loadSettings)
     }
     
-    // Function to save reminders
+    // Сохранение настроек и планирование уведомлений
     private func saveReminders() {
         reminders = [
             Reminder(id: UUID(), type: .motivation, startTime: motivationStartTime, endTime: motivationEndTime, frequency: motivationFrequency),
             Reminder(id: UUID(), type: .focus)
         ]
         
-        // Сохранение настройки "При открытии приложения" в UserDefaults
+        // Сохраняем настройку "При открытии приложения" в UserDefaults
         UserDefaults.standard.set(isAppLaunchFocusEnabled, forKey: "launchWithBreathingPractice")
         
         print("Reminders saved: \(reminders)")
+        
+        // Если уведомления включены, планируем их на каждый день
+        if isMotivationEnabled {
+            scheduleNotificationsDaily(startTime: motivationStartTime, endTime: motivationEndTime, frequency: motivationFrequency)
+        }
     }
     
-    // Function to create a reminder card
+    // Проверка и запрос разрешения на уведомления, если оно не было получено ранее
+    private func requestNotificationPermissionIfNeeded() {
+        let center = UNUserNotificationCenter.current()
+        center.getNotificationSettings { settings in
+            if settings.authorizationStatus != .authorized {
+                center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+                    if let error = error {
+                        print("Ошибка при запросе разрешения: \(error.localizedDescription)")
+                    } else if granted {
+                        print("Разрешение на уведомления получено")
+                    } else {
+                        print("Разрешение на уведомления отклонено")
+                    }
+                }
+            }
+        }
+    }
+    
+    // Планирование уведомлений, которые будут повторяться каждый день
+    private func scheduleNotificationsDaily(startTime: Date, endTime: Date, frequency: Int) {
+        let calendar = Calendar.current
+        // Вычисляем общее количество минут между началом и концом
+        guard let totalMinutes = calendar.dateComponents([.minute], from: startTime, to: endTime).minute, totalMinutes > 0 else {
+            print("Некорректный промежуток времени")
+            return
+        }
+        // Интервал между уведомлениями (в минутах)
+        let intervalMinutes = totalMinutes / frequency
+        
+        var notificationTimes: [DateComponents] = []
+        var currentTime = startTime
+        
+        // Планируем уведомления от времени начала до конца (всего будет frequency+1 уведомление)
+        for _ in 0...frequency {
+            let comp = calendar.dateComponents([.hour, .minute], from: currentTime)
+            notificationTimes.append(comp)
+            if let nextTime = calendar.date(byAdding: .minute, value: intervalMinutes, to: currentTime) {
+                currentTime = nextTime
+            } else {
+                break
+            }
+        }
+        
+        let center = UNUserNotificationCenter.current()
+        // Удаляем ранее запланированные уведомления
+        center.removeAllPendingNotificationRequests()
+        
+        for comp in notificationTimes {
+            let content = UNMutableNotificationContent()
+            content.title = "Напоминание"
+            // Подбираем текст уведомления по часу
+            if let hour = comp.hour {
+                if hour >= 7 && hour < 12 {
+                    content.body = "Прекрасное утро! Не хотите ли зарядиться энергией? Заходите к нам!"
+                } else if hour >= 12 && hour < 16 {
+                    content.body = "Обеденный перерыв? Есть минутка для медитаций?"
+                } else if hour >= 16 && hour < 24 {
+                    content.body = "Расслабься и успокойся с нашими медитациями."
+                } else {
+                    content.body = "Кажется, кто-то не спит? У нас есть отличные медитации, которые помогут уснуть."
+                }
+            }
+            content.sound = .default
+            
+            // Для повторяющихся уведомлений указываем только часы и минуты, repeats: true
+            let trigger = UNCalendarNotificationTrigger(dateMatching: comp, repeats: true)
+            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+            
+            center.add(request) { error in
+                if let error = error {
+                    print("Ошибка при добавлении уведомления: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
+    // Загрузка настроек из UserDefaults
+    private func loadSettings() {
+        isMotivationEnabled = UserDefaults.standard.bool(forKey: "isMotivationEnabled")
+        isFocusEnabled = UserDefaults.standard.bool(forKey: "isFocusEnabled")
+        isAppLaunchFocusEnabled = UserDefaults.standard.bool(forKey: "isAppLaunchFocusEnabled")
+    }
+    
+    // Сохранение настроек в UserDefaults
+    private func saveSettings() {
+        UserDefaults.standard.set(isMotivationEnabled, forKey: "isMotivationEnabled")
+        UserDefaults.standard.set(isFocusEnabled, forKey: "isFocusEnabled")
+        UserDefaults.standard.set(isAppLaunchFocusEnabled, forKey: "isAppLaunchFocusEnabled")
+    }
+    
+    // Форматирование времени в строку "HH:mm"
+    private func timeString(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
+    }
+    
+    // Функция для построения карточки напоминания
     @ViewBuilder
     private func reminderCard(
         title: String,
@@ -134,18 +250,14 @@ struct RemindersView: View {
         isEndTimePickerVisible: Binding<Bool>? = nil
     ) -> some View {
         VStack(spacing: 10) {
-            // Main toggle and optional app launch reminder toggle
             HStack {
                 Text(title)
                     .font(Font.custom("Montserrat-Regular", size: 22))
                     .foregroundColor(Color(uiColor: .CalliopeWhite()))
-                
                 Spacer()
-                
                 Toggle("", isOn: isEnabled)
                     .toggleStyle(SwitchToggleStyle(tint: Color(uiColor: .AuraFlowBlue())))
                     .labelsHidden()
-                
             }
             
             if let isAppLaunchReminderEnabled = isAppLaunchReminderEnabled, isEnabled.wrappedValue {
@@ -155,25 +267,20 @@ struct RemindersView: View {
                     .foregroundColor(Color(uiColor: .CalliopeWhite()))
             }
             
-            
-            // Time settings and frequency for reminders
             if isEnabled.wrappedValue && (isAppLaunchReminderEnabled == nil || (isAppLaunchReminderEnabled != nil && !isAppLaunchReminderEnabled!.wrappedValue)) {
                 if let startTime = startTime, let endTime = endTime, let frequency = frequency, let isStartTimePickerVisible = isStartTimePickerVisible, let isEndTimePickerVisible = isEndTimePickerVisible {
                     
                     Divider().background(Color(uiColor: .CalliopeWhite()))
+                    
                     HStack {
                         Text("Начало")
                             .font(Font.custom("Montserrat-Regular", size: 16))
                             .foregroundColor(Color(uiColor: .CalliopeWhite()))
-                        
                         Spacer()
-                        
                         Text(timeString(from: startTime.wrappedValue))
                             .font(Font.custom("Montserrat-Regular", size: 16))
                             .foregroundColor(Color(uiColor: .CalliopeWhite()).opacity(0.7))
-                            .onTapGesture {
-                                isStartTimePickerVisible.wrappedValue.toggle()
-                            }
+                            .onTapGesture { isStartTimePickerVisible.wrappedValue.toggle() }
                     }
                     
                     Divider().background(Color(uiColor: .CalliopeWhite()))
@@ -187,22 +294,17 @@ struct RemindersView: View {
                         .labelsHidden()
                         .datePickerStyle(.wheel)
                         .frame(maxWidth: .infinity)
-                        .changeTextColor(Color(uiColor: .CalliopeWhite()))
                     }
                     
                     HStack {
                         Text("Конец")
                             .font(Font.custom("Montserrat-Regular", size: 16))
                             .foregroundColor(Color(uiColor: .CalliopeWhite()))
-                        
                         Spacer()
-                        
                         Text(timeString(from: endTime.wrappedValue))
                             .font(Font.custom("Montserrat-Regular", size: 16))
                             .foregroundColor(Color(uiColor: .CalliopeWhite()).opacity(0.7))
-                            .onTapGesture {
-                                isEndTimePickerVisible.wrappedValue.toggle()
-                            }
+                            .onTapGesture { isEndTimePickerVisible.wrappedValue.toggle() }
                     }
                     
                     Divider().background(Color(uiColor: .CalliopeWhite()))
@@ -216,16 +318,13 @@ struct RemindersView: View {
                         .labelsHidden()
                         .datePickerStyle(.wheel)
                         .frame(maxWidth: .infinity)
-                        .changeTextColor(Color(uiColor: .CalliopeWhite()))
                     }
                     
                     HStack {
                         Text("Периодичность")
                             .font(Font.custom("Montserrat-Regular", size: 16))
                             .foregroundColor(Color(uiColor: .CalliopeWhite()))
-                        
                         Spacer()
-                        
                         HStack(spacing: 10) {
                             Button(action: {
                                 if frequency.wrappedValue > 1 {
@@ -236,7 +335,6 @@ struct RemindersView: View {
                                     .font(Font.custom("Montserrat-Regular", size: 16))
                                     .foregroundColor(Color(uiColor: .CalliopeWhite()))
                                     .frame(width: 24, height: 24)
-                                   // .background(Color.gray.opacity(0.2))
                                     .cornerRadius(12)
                             }
                             
@@ -251,7 +349,6 @@ struct RemindersView: View {
                                     .font(Font.custom("Montserrat-Regular", size: 16))
                                     .foregroundColor(Color(uiColor: .CalliopeWhite()))
                                     .frame(width: 24, height: 24)
-                                    //.background(Color.gray.opacity(0.2))
                                     .cornerRadius(12)
                             }
                         }
@@ -269,34 +366,6 @@ struct RemindersView: View {
             RoundedRectangle(cornerRadius: 30)
                 .stroke(Color.gray, lineWidth: 1)
         )
-        .onAppear(perform: loadSettings)
-                .onChange(of: isFocusEnabled) { newValue in
-                    isAppLaunchFocusEnabled = newValue // Если фокус включен, активируем "При открытии приложения"
-                    saveSettings() // Сохраняем изменение
-                }
-                .onChange(of: isMotivationEnabled) { _ in saveSettings() }
-                .onChange(of: isFocusEnabled) { _ in saveSettings() }
-                .onChange(of: isAppLaunchFocusEnabled) { _ in saveSettings() }
-    }
-    
-    private func loadSettings() {
-            isMotivationEnabled = UserDefaults.standard.bool(forKey: "isMotivationEnabled")
-            isFocusEnabled = UserDefaults.standard.bool(forKey: "isFocusEnabled")
-            isAppLaunchFocusEnabled = UserDefaults.standard.bool(forKey: "isAppLaunchFocusEnabled")
-        }
-        
-        // Function to save settings to UserDefaults
-        private func saveSettings() {
-            UserDefaults.standard.set(isMotivationEnabled, forKey: "isMotivationEnabled")
-            UserDefaults.standard.set(isFocusEnabled, forKey: "isFocusEnabled")
-            UserDefaults.standard.set(isAppLaunchFocusEnabled, forKey: "isAppLaunchFocusEnabled")
-        }
-
-    // Function to format time
-    private func timeString(from date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: date)
     }
 }
 

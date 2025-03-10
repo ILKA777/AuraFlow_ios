@@ -84,27 +84,27 @@ struct MainView: View {
                                         } else {
                                             HStack {
                                                 Button(action: {
-                                                                                   // Меняем текущую вкладку на профиль
-                                                                                   selectedTab = .profile
-                                                                               }) {
-                                                                                   ZStack {
-                                                                                       Circle()
-                                                                                           .fill(Color(uiColor: .AuraFlowBlue()))
-                                                                                           .frame(width: 48, height: 48)
-                                                                                       
-                                                                                       Image(systemName: "person")
-                                                                                           .resizable()
-                                                                                           .frame(width: 24, height: 24)
-                                                                                           .foregroundColor(Color(uiColor: .CalliopeBlack()))
-                                                                                   }
-                                                                                   .padding(.trailing, 16)
-                                                                               }
+                                                    // Меняем текущую вкладку на профиль
+                                                    selectedTab = .profile
+                                                }) {
+                                                    ZStack {
+                                                        Circle()
+                                                            .fill(Color(uiColor: .AuraFlowBlue()))
+                                                            .frame(width: 48, height: 48)
+                                                        
+                                                        Image(systemName: "person")
+                                                            .resizable()
+                                                            .frame(width: 24, height: 24)
+                                                            .foregroundColor(Color(uiColor: .CalliopeBlack()))
+                                                    }
+                                                    .padding(.trailing, 16)
+                                                }
                                             }
                                             
                                         }
                                     }
                                     .padding(.top, (UIApplication.shared.windows.first?.safeAreaInsets.top ?? 40) + 10)
-
+                                    
                                     .padding(.bottom, 20)
                                     
                                     if isInputActive {
@@ -266,8 +266,8 @@ struct MainView: View {
                     
                     if playbackManager.isMiniPlayerVisible && playbackManager.currentMeditation != nil {
                         MiniPlayerView(playbackManager: playbackManager)
-//                            .transition(.move(edge: .bottom).combined(with: .opacity))
-//                            .animation(.easeInOut)
+                        //                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                        //                            .animation(.easeInOut)
                             .frame(width: UIScreen.main.bounds.width)
                             .padding(.bottom, 50)
                     }

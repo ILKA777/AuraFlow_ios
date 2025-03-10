@@ -5,13 +5,20 @@
 //  Created by Ilya on 19.01.2025.
 //
 
+//
+//  HeartRateView.swift
+//  AuraFlow
+//
+//  Created by Ilya on 19.01.2025.
+//
+
 import SwiftUI
 
 struct HeartRateView: View {
     @StateObject private var heartRateMonitor = HeartRateMonitor()
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 15) {
             Text("Ваш пульс")
                 .font(.headline)
 
@@ -25,12 +32,15 @@ struct HeartRateView: View {
                 heartRateMonitor.startWorkout()
             }) {
                 Text("Начать измерение")
+                    .font(.system(size: 13.19, weight: .medium)) // Уменьшаем шрифт
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(Color.green)
+                    //.background(Color.green)
                     .foregroundColor(.white)
-                    .cornerRadius(10)
+
             }
+            .background(LinearGradient(gradient: Gradient(colors: [.green, .blue]), startPoint: .leading, endPoint: .trailing))
+            .mask(RoundedRectangle(cornerRadius: 32))
             .padding(.horizontal)
 
             // Кнопка для остановки измерения пульса
@@ -38,24 +48,32 @@ struct HeartRateView: View {
                 heartRateMonitor.stopWorkout()
             }) {
                 Text("Остановить измерение")
+                    .font(.system(size: 13.19, weight: .medium)) // Уменьшаем шрифт
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(Color.red)
+                    
                     .foregroundColor(.white)
-                    .cornerRadius(10)
             }
+            .background(LinearGradient(gradient: Gradient(colors: [.red, .orange]), startPoint: .leading, endPoint: .trailing))
+            .mask(RoundedRectangle(cornerRadius: 32))
             .padding(.horizontal)
 
             Spacer() // Добавляем отступ внизу
         }
         .padding()
         .onAppear {
-            // Действия при появлении экрана (если нужны)
             print("HeartRateView отображен.")
         }
         .onDisappear {
-            // Действия при закрытии экрана (например, остановка измерения)
             heartRateMonitor.stopWorkout()
         }
+    }
+}
+
+// MARK: - Preview
+struct HeartRateView_Previews: PreviewProvider {
+    static var previews: some View {
+        HeartRateView()
+            .previewDevice("iPhone 14 Pro")
     }
 }

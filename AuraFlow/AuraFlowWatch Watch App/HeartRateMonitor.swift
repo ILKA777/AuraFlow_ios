@@ -34,7 +34,7 @@ class HeartRateMonitor: NSObject, ObservableObject, HKWorkoutSessionDelegate {
             workoutSession?.delegate = self
 
             workoutSession?.startActivity(with: Date())
-            print("Тренировка запущена.")
+            print("Измерения запущено.")
 
             query = HKAnchoredObjectQuery(
                 type: heartRateType,
@@ -55,7 +55,7 @@ class HeartRateMonitor: NSObject, ObservableObject, HKWorkoutSessionDelegate {
                 print("Запрос на данные о пульсе выполнен.")
             }
         } catch {
-            print("Ошибка запуска тренировки: \(error.localizedDescription)")
+            print("Ошибка запуска измерения: \(error.localizedDescription)")
         }
     }
 
@@ -100,12 +100,12 @@ class HeartRateMonitor: NSObject, ObservableObject, HKWorkoutSessionDelegate {
     // MARK: - HKWorkoutSessionDelegate
     func workoutSession(_ workoutSession: HKWorkoutSession, didChangeTo toState: HKWorkoutSessionState, from fromState: HKWorkoutSessionState, date: Date) {
         if toState == .ended {
-            print("Тренировка завершена")
+            print("Измерение завершена")
         }
     }
 
     func workoutSession(_ workoutSession: HKWorkoutSession, didFailWithError error: Error) {
-        print("Ошибка тренировки: \(error.localizedDescription)")
+        print("Ошибка измерения: \(error.localizedDescription)")
     }
 }
 
@@ -119,7 +119,4 @@ extension HeartRateMonitor: WCSessionDelegate {
     }
 }
 
-
-
 #endif
-

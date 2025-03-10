@@ -115,7 +115,6 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         // Устанавливаем APNs-токен для Firebase Messaging
         Messaging.messaging().apnsToken = deviceToken
     }
-
 }
 
 
