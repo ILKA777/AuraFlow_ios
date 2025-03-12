@@ -10,31 +10,33 @@ import Combine
 
 class PlaybackManager: ObservableObject {
     static let shared = PlaybackManager()
-
+    
     @Published var currentPlayer: AVPlayer? = nil
     @Published var queuePlayer: AVQueuePlayer? = nil
     @Published var isPlaying: Bool = false
     @Published var currentMeditation: Meditation? = nil
     @Published var currentAlbum: MeditationAlbum? = nil
-
+    
     @Published var isMiniPlayerVisible: Bool = false
-
+    
     @Published var currentTime: Double = 0.0
     @Published var duration: Double = 1.0
-
+    
+    private var playSessionStart: Date? = nil
+    
     private var timeObserverToken: Any?
     private var playerItemObserver: NSKeyValueObservation?
-
+    
     var currentTimeString: String {
         let currentSeconds = Int(currentTime)
         return String(format: "%02d:%02d", currentSeconds / 60, currentSeconds % 60)
     }
-
+    
     var remainingTimeString: String {
         let remainingSeconds = max(0, Int(duration - currentTime))
         return String(format: "-%02d:%02d", remainingSeconds / 60, remainingSeconds % 60)
     }
-
+    
     func playAlbum(album: MeditationAlbum) async {
         await stopCurrent()
         
@@ -43,17 +45,17 @@ class PlaybackManager: ObservableObject {
             self?.currentAlbum = album
             self?.currentTime = 0.0
         }
-
+        
         let items = album.tracks.map { AVPlayerItem(url: URL(string: $0.videoLink)!) }
-
+        
         DispatchQueue.main.async { [weak self] in
             self?.queuePlayer = AVQueuePlayer(items: items)
         }
-
+        
         DispatchQueue.main.async { [weak self] in
             self?.currentMeditation = album.tracks.first
         }
-
+        
         if let firstItem = items.first {
             do {
                 let loadedDuration = try await firstItem.asset.load(.duration).seconds
@@ -71,35 +73,42 @@ class PlaybackManager: ObservableObject {
                 self?.duration = 1.0
             }
         }
-
+        
         DispatchQueue.main.async { [weak self] in
             self?.isPlaying = true
             self?.queuePlayer?.play()
         }
-
+        
+        DispatchQueue.main.async { [weak self] in
+                    self?.isPlaying = true
+                    self?.queuePlayer?.play()
+                    // Фиксируем время начала сессии воспроизведения
+                    self?.playSessionStart = Date()
+                }
+        
         setupPlayerTimeObserver()
         observeCurrentItem()
     }
-
+    
     func playAlbum(from album: MeditationAlbum, startingAt meditation: Meditation) async {
         await stopCurrent()
-     
+        
         DispatchQueue.main.async { [weak self] in
             self?.isMiniPlayerVisible = true
             self?.currentAlbum = album
         }
-
+        
         if let startingIndex = album.tracks.firstIndex(where: { $0.id == meditation.id }) {
             let items = album.tracks[startingIndex...].map { AVPlayerItem(url: URL(string: $0.videoLink)!) }
-
+            
             DispatchQueue.main.async { [weak self] in
                 self?.queuePlayer = AVQueuePlayer(items: Array(items))
             }
-
+            
             DispatchQueue.main.async { [weak self] in
                 self?.currentMeditation = meditation
             }
-
+            
             if let firstItem = items.first {
                 do {
                     let loadedDuration = try await firstItem.asset.load(.duration).seconds
@@ -117,22 +126,29 @@ class PlaybackManager: ObservableObject {
                     self?.duration = 1.0
                 }
             }
-
+            
             DispatchQueue.main.async { [weak self] in
                 self?.isPlaying = true
                 self?.queuePlayer?.play()
             }
-
+            
+            DispatchQueue.main.async { [weak self] in
+                            self?.isPlaying = true
+                            self?.queuePlayer?.play()
+                            // Фиксируем время начала сессии воспроизведения
+                            self?.playSessionStart = Date()
+                        }
+            
             setupPlayerTimeObserver()
             observeCurrentItem()
         }
     }
-
+    
     func stopCurrentAudio() {
         queuePlayer?.pause()
         isPlaying = false
     }
-
+    
     private func setupPlayerTimeObserver() {
         guard let player = queuePlayer else { return }
         if let token = timeObserverToken {
@@ -149,7 +165,7 @@ class PlaybackManager: ObservableObject {
             self.duration = player.currentItem?.duration.seconds ?? 1.0
         }
     }
-
+    
     func observeCurrentItem() {
         playerItemObserver = queuePlayer?.observe(\.currentItem, options: [.new, .initial]) { [weak self] _, change in
             if let currentItem = change.newValue as? AVPlayerItem,
@@ -160,13 +176,20 @@ class PlaybackManager: ObservableObject {
             }
         }
     }
-
+    
     func skipToNextTrack() {
         queuePlayer?.advanceToNextItem()
     }
-
+    
     func stopCurrent() async {
         await MainActor.run {
+            // Если была активна сессия проигрывания, обновляем статистику
+            if let start = playSessionStart {
+                let elapsed = Date().timeIntervalSince(start)
+                let minutes = elapsed / 60.0
+                StatisticService.shared.meditationMinutes += minutes
+                playSessionStart = nil
+            }
             isMiniPlayerVisible = false
             queuePlayer?.pause()
             queuePlayer?.removeAllItems()
@@ -176,27 +199,37 @@ class PlaybackManager: ObservableObject {
             isPlaying = false
         }
         timeObserverToken = nil
-
+        
         if let observer = playerItemObserver {
             observer.invalidate()
             playerItemObserver = nil
         }
     }
-
     func seek(to time: Double) {
         let cmTime = CMTime(seconds: time, preferredTimescale: 600)
         queuePlayer?.seek(to: cmTime)
     }
-
+    
     func togglePlayPause() {
         if isPlaying {
+            // При паузе вычисляем прошедшее время с момента старта и обновляем StatisticService
+            if let start = playSessionStart {
+                let elapsed = Date().timeIntervalSince(start)
+                let minutes = elapsed / 60.0
+                DispatchQueue.main.async {
+                    StatisticService.shared.meditationMinutes += minutes
+                    print(StatisticService.shared.meditationMinutes)
+                }
+                playSessionStart = nil
+            }
             queuePlayer?.pause()
         } else {
+            // При возобновлении проигрывания фиксируем время старта сессии
+            playSessionStart = Date()
             queuePlayer?.play()
         }
-        
         DispatchQueue.main.async { [weak self] in
-            self?.isPlaying.toggle() // Переключаем состояние после изменения состояния плеера
+            self?.isPlaying.toggle()
         }
     }
 }

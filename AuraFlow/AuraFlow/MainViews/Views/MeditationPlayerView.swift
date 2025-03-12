@@ -16,6 +16,7 @@ enum MediaType {
 
 struct MeditationPlayerView: View {
     @StateObject private var playbackManager = PlaybackManager.shared
+    @StateObject private var healthKitManager = HealthKitManager.shared
     @StateObject private var heartRateReceiver = HeartRateReceiver()
     
     let meditation: Meditation
@@ -38,6 +39,9 @@ struct MeditationPlayerView: View {
     @State private var startHeartRate: Double = 0
     @State private var endHeartRate: Double = 0
     @State private var showSummary: Bool = false
+    
+    // Новое состояние для отслеживания времени входа
+    @State private var viewAppearTime: Date? = nil
 
     init(meditation: Meditation, album: MeditationAlbum) {
         self.meditation = meditation
@@ -73,52 +77,54 @@ struct MeditationPlayerView: View {
                     playbackManager.stopCurrentAudio()
                 }
                 // В правом верхнем углу отображаем пульс и график
-                VStack {
-                    HStack {
-                        Spacer()
-                        VStack {
-                            Text("Пульс")
-                                .font(.caption)
-                                .foregroundColor(.white)
-                                .padding(.top, 4)
-                            
-                            Text("\(Int(heartRateReceiver.heartRate)) BPM")
-                                .font(.headline)
-                                .foregroundColor(.red)
-                                .padding(.vertical, 6)
-                                .padding(.horizontal, 12)
-                                .background(Color.black.opacity(0.7))
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                                .shadow(radius: 5)
-                            
-                            Chart {
-                                ForEach(heartRateHistory.indices, id: \.self) { index in
-                                    LineMark(
-                                        x: .value("Time", index),
-                                        y: .value("Heart Rate", heartRateHistory[index])
-                                    )
-                                    .interpolationMethod(.monotone)
-                                    .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
-                                    .foregroundStyle(LinearGradient(
-                                        gradient: Gradient(colors: [.red, .orange]),
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    ))
+                if healthKitManager.showPulseDuringVideo {
+                    VStack {
+                        HStack {
+                            Spacer()
+                            VStack {
+                                Text("Пульс")
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                                    .padding(.top, 4)
+                                
+                                Text("\(Int(heartRateReceiver.heartRate)) BPM")
+                                    .font(.headline)
+                                    .foregroundColor(.red)
+                                    .padding(.vertical, 6)
+                                    .padding(.horizontal, 12)
+                                    .background(Color.black.opacity(0.7))
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                    .shadow(radius: 5)
+                                
+                                Chart {
+                                    ForEach(heartRateHistory.indices, id: \.self) { index in
+                                        LineMark(
+                                            x: .value("Time", index),
+                                            y: .value("Heart Rate", heartRateHistory[index])
+                                        )
+                                        .interpolationMethod(.monotone)
+                                        .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                                        .foregroundStyle(LinearGradient(
+                                            gradient: Gradient(colors: [.red, .orange]),
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        ))
+                                    }
                                 }
+                                .chartYAxis {
+                                    AxisMarks(position: .leading, values: .automatic)
+                                }
+                                .chartXScale(domain: 0...heartRateHistory.count + 30)
+                                .frame(width: 150, height: 100)
+                                .padding(.horizontal, 10)
+                                .background(Color.black.opacity(0.6))
+                                .cornerRadius(12)
+                                .shadow(radius: 5)
                             }
-                            .chartYAxis {
-                                AxisMarks(position: .leading, values: .automatic)
-                            }
-                            .chartXScale(domain: 0...heartRateHistory.count + 30)
-                            .frame(width: 150, height: 100)
-                            .padding(.horizontal, 10)
-                            .background(Color.black.opacity(0.6))
-                            .cornerRadius(12)
-                            .shadow(radius: 5)
+                            .padding()
                         }
-                        .padding()
+                        Spacer()
                     }
-                    Spacer()
                 }
             } else {
                 Image(uiImage: currentMeditation.image)
@@ -133,12 +139,18 @@ struct MeditationPlayerView: View {
                 VStack {
                     HStack {
                         Button(action: {
+                            // Если видео активно, останавливаем его
                             if isVideoPlaying {
                                 isVideoPlaying = false
                                 isMediaPlaying = false
                                 currentMediaType = .audio
                                 playbackManager.seek(to: currentTime)
                                 playbackManager.togglePlayPause()
+                            }
+                            // Проверяем время пребывания на экране
+                            if let appearTime = viewAppearTime,
+                               Date().timeIntervalSince(appearTime) > 60, healthKitManager.showPulseAnalyticsAfterExit {
+                                finishMeditation()
                             } else {
                                 dismiss()
                             }
@@ -280,17 +292,7 @@ struct MeditationPlayerView: View {
                                     .foregroundColor(.white)
                             }
                         }
-                        .padding(.bottom, 20)
-                        
-                        // Кнопка для завершения медитации
-                        Button(action: finishMeditation) {
-                            Text("Завершить медитацию")
-                                .foregroundColor(.white)
-                                .padding()
-                                .background(Color.blue)
-                                .cornerRadius(8)
-                        }
-                        .padding(.bottom, 40)
+                        .padding(.bottom, 30)
                     }
                     .padding(.horizontal, 20)
                 }
@@ -301,12 +303,12 @@ struct MeditationPlayerView: View {
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
+            viewAppearTime = Date()  // Записываем время входа на экран
             playbackManager.isMiniPlayerVisible = false
             // Сохраняем начальное значение пульса при запуске медитации
-            
             DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                    startHeartRate = heartRateReceiver.heartRate
-                }
+                startHeartRate = heartRateReceiver.heartRate
+            }
             
             if currentMediaType == .audio && !playbackManager.isPlaying {
                 playbackManager.togglePlayPause()
@@ -325,6 +327,12 @@ struct MeditationPlayerView: View {
         .onDisappear {
             playbackManager.isMiniPlayerVisible = true
         }
+        // Sheet с итогами медитации; при закрытии итогового окна происходит dismiss() плеера
+        .sheet(isPresented: $showSummary, onDismiss: {
+            dismiss()
+        }) {
+            MeditationSummaryView(startHeartRate: startHeartRate, endHeartRate: endHeartRate, heartRateHistory: heartRateHistory)
+        }
         .onReceive(playbackManager.$currentTime) { newTime in
             if currentMediaType == .audio && !isUserSeeking {
                 currentTime = newTime
@@ -334,10 +342,6 @@ struct MeditationPlayerView: View {
             if currentMediaType == .audio {
                 mediaDuration = newDuration
             }
-        }
-        // Sheet с итогами медитации
-        .sheet(isPresented: $showSummary) {
-            MeditationSummaryView(startHeartRate: startHeartRate, endHeartRate: endHeartRate, heartRateHistory: heartRateHistory)
         }
     }
     
@@ -364,12 +368,9 @@ struct MeditationPlayerView: View {
         return String(format: "%02d:%02d", totalSeconds / 60, totalSeconds % 60)
     }
     
-    // Функция завершения медитации:
-    // Сохраняет конечный пульс и показывает экран с итогами
+    // Функция завершения медитации: сохраняет конечный пульс и показывает экран с итогами
     private func finishMeditation() {
-        // Сохраняем конечное значение пульса
         endHeartRate = heartRateReceiver.heartRate
         showSummary = true
     }
 }
-

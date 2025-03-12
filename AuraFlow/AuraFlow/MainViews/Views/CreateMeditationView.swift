@@ -5,8 +5,10 @@
 //  Created by Ilya on 27.12.2024.
 //
 
-import SwiftUI
 
+import SwiftUI
+import AVKit
+import Charts
 
 struct CreateMeditationView: View {
     @State private var selectedDuration = 5
@@ -17,128 +19,151 @@ struct CreateMeditationView: View {
     let durations = [5, 10, 15, 20, 30, 45, 60]  // Available meditation durations
     @State private var duration: Double = 5
     
+    @State private var showPopup: Bool = false
+    @State private var navigateToPlayer: Bool = false
+    
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {  // Adjusted spacing for better positioning closer to top
-                
-                // Title and Duration Controls
-                HStack {
-                    Text("Время медитации: \(Int(duration))" + " мин.")
-                        .foregroundColor(.white)
-                        .font(.system(size: 18)).bold()
-                    
-                    Button(action: {
-                        if duration > 0 {
-                            duration -= 1
-                        }
-                    }) {
-                        Text("-")
-                            .font(.title)
+            ZStack {
+                VStack(spacing: 20) {
+                    // Title and Duration Controls
+                    HStack {
+                        Text("Время медитации: \(Int(duration)) мин.")
                             .foregroundColor(.white)
-                            .frame(width: 30, height: 30)
-                            .background(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.white))
-                    }
-                    
-                    Button(action: {
-                        if duration < 30 {
-                            duration += 1
-                        }
-                    }) {
-                        Text("+")
-                            .font(.title)
-                            .foregroundColor(.white)
-                            .frame(width: 30, height: 30)
-                            .background(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.white))
-                    }
-                }
-                .padding(.top, 20)  // Adjusted top padding
-                .padding(.leading, -60)
-                
-                // Melody Prompt Field
-                VStack(alignment: .leading) {
-                    Text("Выберите шаблон")
-                        .foregroundColor(.white)
-                        .font(.system(size: 18)).bold()
-
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 16) {
-                            ForEach(videosForGeneration, id: \.title) { video in
-                                VideoCell(video: video, isSelected: video.title == selectedVideo?.title)
-                                                                    .onTapGesture {
-                                                                        // При тапе обновляем выбранное видео
-                                                                        selectedVideo = video
-                                                                    }
-
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 10)
-                    }
-                    
-                }
-                .padding(.horizontal)
-                .padding(.top, 10)  // Adjusted spacing to move it higher
-                
-                // Meditation Prompt Field
-                VStack(alignment: .leading) {
-                    Text("Какую вы бы хотели медитацию ?")
-                        .foregroundColor(.white)
-                        .font(.system(size: 18)).bold()
-                    
-                    ZStack(alignment: .leading) {
-                        if meditationPrompt.isEmpty {
-                            Text("Опишите свое состояние, и то какой результат вы хотите получить от медитации.")
-                                .bold()
-                                .foregroundColor(Color(uiColor: .lightGray))
-                                .padding(.top, -40)
-                            
-                        }
-                        TextEditor(text: $meditationPrompt)
-                    }
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.white))
-                    .scrollContentBackground(.hidden)
-                    .foregroundColor(.black)
-                    
-                    .frame(height: 130)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray, lineWidth: 1)
-                    )
-                    
-                    
-                }
-                
-                
-                .padding(.horizontal)
-                .padding(.top, 10)  // Adjusted spacing to move it higher
-                
-                // Create Meditation Button
-                Button(action: {
-                    // Action to create meditation
-                    print("Создание медитации с длительностью: \(selectedDuration) минут, промптом для мелодии: \(melodyPrompt), промптом для медитации: \(meditationPrompt)")
-                }) {
-                    Text("Создать медитацию")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(RoundedRectangle(cornerRadius: 10).fill(Color.blue))
+                            .font(.system(size: 18)).bold()
                         
-               
+                        Button(action: {
+                            if duration > 0 {
+                                duration -= 1
+                            }
+                        }) {
+                            Text("-")
+                                .font(.title)
+                                .foregroundColor(.white)
+                                .frame(width: 30, height: 30)
+                                .background(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.white))
+                        }
+                        .contentShape(Rectangle())
+                        .padding(10)
+                        
+                        Button(action: {
+                            if duration < 30 {
+                                duration += 1
+                            }
+                        }) {
+                            Text("+")
+                                .font(.title)
+                                .foregroundColor(.white)
+                                .frame(width: 30, height: 30)
+                                .background(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.white))
+                        }
+                        .contentShape(Rectangle())
+                        .padding(10)
+                    }
+                    .padding(.top, 30)
+                    .padding(.leading, -30)
+                    
+                    // Melody Prompt Field
+                    VStack(alignment: .leading) {
+                        Text("Выберите шаблон")
+                            .foregroundColor(.white)
+                            .font(.system(size: 18)).bold()
+                        
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 16) {
+                                ForEach(videosForGeneration, id: \.title) { video in
+                                    VideoCell(video: video, isSelected: video.title == selectedVideo?.title)
+                                        .onTapGesture {
+                                            selectedVideo = video
+                                        }
+                                }
+                            }
+                            .padding(.horizontal)
+                            .padding(.top, 10)
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 10)
+                    
+                    // Meditation Prompt Field
+                    VStack(alignment: .leading) {
+                        Text("Какую вы бы хотели медитацию ?")
+                            .foregroundColor(.white)
+                            .font(.system(size: 18)).bold()
+                        
+                        ZStack(alignment: .leading) {
+                            if meditationPrompt.isEmpty {
+                                Text("Опишите свое состояние, и то какой результат вы хотите получить от медитации.")
+                                    .bold()
+                                    .foregroundColor(Color(uiColor: .lightGray))
+                                    .padding(.top, -40)
+                            }
+                            TextEditor(text: $meditationPrompt)
+                        }
+                        .padding()
+                        .background(RoundedRectangle(cornerRadius: 10).fill(Color.white))
+                        .scrollContentBackground(.hidden)
+                        .foregroundColor(.black)
+                        .frame(height: 130)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 10)
+                    
+                    // Create Meditation Button
+                    Button(action: {
+                        // По тапу показываем popup и запускаем таймер 10 сек
+                        showPopup = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                            showPopup = false
+                            navigateToPlayer = true
+                        }
+                        print("Создание медитации с длительностью: \(selectedDuration) минут, промптом для мелодии: \(melodyPrompt), промптом для медитации: \(meditationPrompt)")
+                    }) {
+                        Text("Создать медитацию")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(RoundedRectangle(cornerRadius: 10).fill(Color.blue))
+                    }
+                    .padding(.top, 20)
+                    
+                    Spacer()
                 }
-                .padding(.top, 20) // Adjusted padding for button positioning
+                .padding(.top, -40)
+                .background(
+                    Image("default")
+                        .resizable()
+                        .scaledToFill()
+                        .ignoresSafeArea()
+                )
                 
-                Spacer()
+                // Popup Overlay
+                if showPopup {
+                    CreatingMeditationPopupView()
+                }
                 
+                // Навигация к видео плееру после завершения "загрузки"
+                NavigationLink(
+                    destination: Group {
+                        if let selectedVideo = selectedVideo, let url = URL(string: selectedVideo.videoLink) {
+                            FullScreenMeditationVideoPlayerView(videoURL: url)
+                        } else {
+                            Text("Видео не выбрано")
+                        }
+                    },
+                    isActive: $navigateToPlayer,
+                    label: { EmptyView() }
+                )
+
+                
+                
+
             }
-            .padding(.top, -40)
-            .background(
-                Image("default")
-                    .resizable()
-                    .scaledToFill()
-                    .ignoresSafeArea()
-            )
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("Создай свою медитацию")
@@ -149,6 +174,146 @@ struct CreateMeditationView: View {
         }
     }
 }
+
+struct CreatingMeditationPopupView: View {
+    var body: some View {
+        VStack(spacing: 16) {
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                .scaleEffect(2.0)
+            Text("Создаю медитацию ✨")
+                .font(.title2)
+                .foregroundColor(.white)
+        }
+        .padding(20)
+        .background(Color.black.opacity(0.8))
+        .cornerRadius(12)
+        .shadow(radius: 10)
+    }
+}
+
+struct FullScreenMeditationVideoPlayerView: View {
+    let videoURL: URL
+    @Environment(\.dismiss) private var dismiss
+    @State private var player = AVPlayer()
+    
+    // Добавляем объекты для отслеживания пульса
+    @StateObject private var healthKitManager = HealthKitManager.shared
+    @StateObject private var playbackManager = PlaybackManager.shared
+    
+    @StateObject private var heartRateReceiver = HeartRateReceiver()
+    @State private var heartRateHistory: [Double] = []
+    
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            VideoPlayer(player: player)
+                .ignoresSafeArea()
+                .onAppear {
+                    Task {  // Создаем асинхронную задачу
+                        if playbackManager.isPlaying {
+                            await playbackManager.stopCurrent()
+                            
+                            // Создаём элемент плеера и запускаем видео
+                            let playerItem = AVPlayerItem(url: videoURL)
+                            player.replaceCurrentItem(with: playerItem)
+                            player.play()
+                        } else {
+                            // Создаём элемент плеера и запускаем видео
+                            let playerItem = AVPlayerItem(url: videoURL)
+                            player.replaceCurrentItem(with: playerItem)
+                            player.play()
+                        }
+                    }
+                    
+                   
+                    
+                    
+                    // Обновляем историю пульса каждые 2 секунды
+                    Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
+                        let currentHR = heartRateReceiver.heartRate
+                        heartRateHistory.append(currentHR)
+                        if heartRateHistory.count > 20 {
+                            heartRateHistory.removeFirst()
+                        }
+                    }
+                }
+                .onDisappear {
+                    player.pause()
+                    player.replaceCurrentItem(with: nil)
+                }
+
+            
+            // Отображаем пульс и график, если включено в настройках HealthKitManager
+            if healthKitManager.showPulseDuringVideo {
+                VStack {
+                    HStack {
+                        Spacer()
+                        VStack {
+                            Text("Пульс")
+                                .font(.caption)
+                                .foregroundColor(.white)
+                                .padding(.top, 4)
+                            
+                            Text("\(Int(heartRateReceiver.heartRate)) BPM")
+                                .font(.headline)
+                                .foregroundColor(.red)
+                                .padding(.vertical, 6)
+                                .padding(.horizontal, 12)
+                                .background(Color.black.opacity(0.7))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                .shadow(radius: 5)
+                            
+                            Chart {
+                                ForEach(heartRateHistory.indices, id: \.self) { index in
+                                    LineMark(
+                                        x: .value("Time", index),
+                                        y: .value("Heart Rate", heartRateHistory[index])
+                                    )
+                                    .interpolationMethod(.monotone)
+                                    .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                                    .foregroundStyle(LinearGradient(
+                                        gradient: Gradient(colors: [.red, .orange]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    ))
+                                }
+                            }
+                            .chartYAxis {
+                                AxisMarks(position: .leading, values: .automatic)
+                            }
+                            .chartXScale(domain: 0...max(Double(heartRateHistory.count) + 30, 30))
+                            .frame(width: 150, height: 100)
+                            .padding(.horizontal, 10)
+                            .background(Color.black.opacity(0.6))
+                            .cornerRadius(12)
+                            .shadow(radius: 5)
+                        }
+                        .padding()
+                    }
+                    Spacer()
+                }
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .tabBar)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(Color(uiColor: .CalliopeWhite()))
+                }
+            }
+        }
+    }
+}
+
+#Preview {
+    FullScreenMeditationVideoPlayerView(videoURL: URL(string: "https://example.com/video.mp4")!)
+}
+
 
 #Preview {
     CreateMeditationView()

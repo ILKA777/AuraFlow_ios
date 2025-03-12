@@ -186,7 +186,7 @@ struct MainView: View {
                                                 }
                                             }
                                             .padding(.top, 10)
-                                            .padding(.bottom, playbackManager.isMiniPlayerVisible ? (UIScreen.main.bounds.height == 667 ? 220 : 160) : (UIScreen.main.bounds.height == 667 ? 140 : 80)) // Динамическое изменение нижнего отступа
+                                            .padding(.bottom, playbackManager.isMiniPlayerVisible ? (UIScreen.main.bounds.height == 667 ? 220 : 220) : (UIScreen.main.bounds.height == 667 ? 140 : 100)) // Динамическое изменение нижнего отступа
                                         }
                                     }
                                     .padding(.top, -20)

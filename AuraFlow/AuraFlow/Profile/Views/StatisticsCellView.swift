@@ -10,7 +10,7 @@ import SwiftUI
 struct StatisticsCellView: View {
     var title: LocalizedStringKey = "Статистика"
     var subtitle: String = "Последняя медитация 10 ч назад"
-    var progress: String = "1 из 7"
+    @StateObject private var statisticsManager = StatisticService.shared // Наш менеджер статистики
     
     var body: some View {
         ZStack {
@@ -43,7 +43,7 @@ struct StatisticsCellView: View {
                 Spacer()
                 
                 // Progress Indicator
-                Text(progress)
+                Text("\(Int(statisticsManager.meditationMinutes)) из \(Int(statisticsManager.targetMinutes))")
                     .font(Font.custom("Montserrat-Regular", size: 18))
                     .foregroundColor(Color(uiColor: .CalliopeWhite()).opacity(0.9))
                     .offset(x: -10, y: 15)

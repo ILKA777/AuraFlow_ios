@@ -20,7 +20,9 @@ struct ProfileView: View {
     
     @State private var networkServiceUrl = NetworkService.shared.url
     
-    private let healthKitManager = HealthKitManager() // Экземпляр менеджера HealthKit
+    // Меняем на @StateObject для использования биндингов новых свойств
+    @StateObject private var healthKitManager = HealthKitManager.shared
+    
     private var urlSessionTask: URLSessionDataTask? // Для отмены запроса при уходе с экрана
     
     var body: some View {
@@ -68,26 +70,34 @@ struct ProfileView: View {
                     // Карточка статистики
                     ZStack {
                         if isUserLoggedIn == false {
-                            StatisticsCellView()
-                                .blur(radius: 3)
+//                            StatisticsCellView()
+//                                .blur(radius: 3)
                             
-                            HStack {
-                                Image(systemName: "lock.fill")
-                                    .font(Font.custom("Montserrat-Semibold", size: 22))
-                                    .foregroundColor(Color(uiColor: .CalliopeBlack()))
-                                    .offset(x: 15)
-                                
-                                Text("Статистика недоступна")
-                                    .font(Font.custom("Montserrat-Regular", size: 20))
-                                    .foregroundColor(Color(uiColor: .CalliopeBlack()))
-                                    .padding()
+                            NavigationLink(destination: StatisticView()) {
+                                StatisticsCellView()
                             }
-                            .cornerRadius(10)
-                            .frame(maxWidth: UIScreen.main.bounds.width - 30, maxHeight: .infinity)
-                            .background(Color(uiColor: .CalliopeWhite()).opacity(0.7))
-                            .cornerRadius(20)
+                            
+//                            HStack {
+//                                Image(systemName: "lock.fill")
+//                                    .font(Font.custom("Montserrat-Semibold", size: 22))
+//                                    .foregroundColor(Color(uiColor: .CalliopeBlack()))
+//                                    .offset(x: 15)
+//                                
+//                                Text("Статистика недоступна")
+//                                    .font(Font.custom("Montserrat-Regular", size: 20))
+//                                    .foregroundColor(Color(uiColor: .CalliopeBlack()))
+//                                    .padding()
+//                            }
+//                            .cornerRadius(10)
+//                            .frame(maxWidth: UIScreen.main.bounds.width - 30, maxHeight: .infinity)
+//                            .background(Color(uiColor: .CalliopeWhite()).opacity(0.7))
+//                            .cornerRadius(20)
                         } else {
-                            StatisticsCellView()
+                            
+                            
+                            NavigationLink(destination: StatisticView()) {
+                                StatisticsCellView()
+                            }
                         }
                     }
                     
@@ -105,6 +115,7 @@ struct ProfileView: View {
                             destination: RemindersView()
                         )
                         
+                        // Основной переключатель для синхронизации с Apple Health
                         Toggle(isOn: $isAppleHealthConnected) {
                             Text("Apple Health")
                                 .font(Font.custom("Montserrat-Regular", size: 20))
@@ -114,6 +125,11 @@ struct ProfileView: View {
                         .onChange(of: isAppleHealthConnected) { newValue in
                             if newValue {
                                 requestHealthKitAccess()
+
+                            } else {
+                                // Если синхронизация отключена, сбрасываем дополнительные настройки
+                                healthKitManager.showPulseDuringVideo = false
+                                healthKitManager.showPulseAnalyticsAfterExit = false
                             }
                         }
                         .toggleStyle(SwitchToggleStyle(tint: Color.green))
@@ -128,6 +144,48 @@ struct ProfileView: View {
                                 .fill(Color(uiColor: .CalliopeBlack()).opacity(0.1))
                         )
                         .padding(.horizontal)
+                        
+                        
+                        // Дополнительные переключатели – появляются только если Apple Health включен
+                        if isAppleHealthConnected {
+                            Toggle(isOn: $healthKitManager.showPulseDuringVideo) {
+                                Text("Отображать пульс во время  просмотра видео")
+                                    .font(Font.custom("Montserrat-Regular", size: 18))
+                                    .foregroundColor(Color(uiColor: .CalliopeWhite()))
+                                    .offset(x: 20)
+                            }
+                            .toggleStyle(SwitchToggleStyle(tint: Color.green))
+                            .padding()
+                            .offset(x: -10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 30)
+                                    .stroke(Color.gray, lineWidth: 1)
+                            )
+                            .background(
+                                RoundedRectangle(cornerRadius: 30)
+                                    .fill(Color(uiColor: .CalliopeBlack()).opacity(0.1))
+                            )
+                            .padding(.horizontal)
+                            
+                            Toggle(isOn: $healthKitManager.showPulseAnalyticsAfterExit) {
+                                Text("Показывать аналитику пульса после выхода из плеера")
+                                    .font(Font.custom("Montserrat-Regular", size: 18))
+                                    .foregroundColor(Color(uiColor: .CalliopeWhite()))
+                                    .offset(x: 20)
+                            }
+                            .toggleStyle(SwitchToggleStyle(tint: Color.green))
+                            .padding()
+                            .offset(x: -10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 30)
+                                    .stroke(Color.gray, lineWidth: 1)
+                            )
+                            .background(
+                                RoundedRectangle(cornerRadius: 30)
+                                    .fill(Color(uiColor: .CalliopeBlack()).opacity(0.1))
+                            )
+                            .padding(.horizontal)
+                        }
                     }
                     
                     // Footer
@@ -171,11 +229,16 @@ struct ProfileView: View {
                         .font(Font.custom("Montserrat-Semibold", size: 20))
                         .foregroundColor(Color(uiColor: .CalliopeWhite()))
                 }
-
             }
             .onAppear {
                 playbackManager.isMiniPlayerVisible = false
                 fetchUserData()
+                // При появлении запрашиваем разрешение и обновляем переключатель
+                healthKitManager.requestAuthorization { authorized in
+                    DispatchQueue.main.async {
+                        isAppleHealthConnected = authorized
+                    }
+                }
             }
             .onDisappear {
                 playbackManager.isMiniPlayerVisible = true
@@ -250,21 +313,18 @@ struct ProfileView: View {
             }
         }.resume()
     }
-
-
     
     private func requestHealthKitAccess() {
         healthKitManager.requestAuthorization { success in
+            DispatchQueue.main.async {
+                isAppleHealthConnected = success
+            }
             if !success {
-                DispatchQueue.main.async {
-                    self.isAppleHealthConnected = false
-                }
                 print("HealthKit authorization failed.")
             }
         }
     }
 }
-
 
 #Preview {
     NavigationStack {
