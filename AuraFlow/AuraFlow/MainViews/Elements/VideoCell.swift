@@ -11,7 +11,7 @@ import SwiftUI
 struct VideoCell: View {
     var video: VideoForGeneration
     var isSelected: Bool  // Новый параметр для определения выбранной ячейки
-
+    
     var body: some View {
         VStack {
             // Асинхронная загрузка изображения с отображением рамки при выделении

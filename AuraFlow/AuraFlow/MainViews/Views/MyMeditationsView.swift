@@ -5,8 +5,6 @@
 //  Created by Ilya on 27.12.2024.
 //
 
-
-
 import SwiftUI
 
 struct MyMeditationsView: View {
@@ -14,22 +12,22 @@ struct MyMeditationsView: View {
     private let tabs = ["Понравившиеся", "Сгенерированные"]
     
     var favoriteMeditationsAlbum =
-        MeditationAlbum(
-            title: "Понравившееся",
-            author: "Сервис",
-            tracks: sampleMeditations.filter { $0.tags.contains("Отдых") },
-            status: "Альбом пополняется"
-        )
+    MeditationAlbum(
+        title: "Понравившееся",
+        author: "Сервис",
+        tracks: sampleMeditations.filter { $0.tags.contains("Отдых") },
+        status: "Альбом пополняется"
+    )
     
     var generatedMeditationsAlbum =
-        MeditationAlbum(
-            title: "Сгенерированные",
-            author: "Сервис",
-            tracks: sampleMeditations.filter { $0.tags.contains("Работа") },
-            status: "Альбом пополняется"
-        )
-        
-
+    MeditationAlbum(
+        title: "Сгенерированные",
+        author: "Сервис",
+        tracks: sampleMeditations.filter { $0.tags.contains("Работа") },
+        status: "Альбом пополняется"
+    )
+    
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -46,7 +44,7 @@ struct MyMeditationsView: View {
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     .padding()
-                   // Spacer()
+                    // Spacer()
                     // Список медитаций
                     if selectedTab == "Понравившиеся" {
                         MeditationListCustomView(album:favoriteMeditationsAlbum)
@@ -77,7 +75,7 @@ struct MeditationListCustomView: View {
     
     // Состояние для управления переходом
     @State private var selectedMeditation: Meditation? = nil
-        
+    
     @State private var scrollOffset: CGFloat = 0.0
     @State private var scrollingRight: Bool = true
     @State private var timer: Timer? = nil
@@ -97,12 +95,12 @@ struct MeditationListCustomView: View {
             }
         }
     }
-
+    
     func stopScrolling() {
         timer?.invalidate()
         timer = nil
     }
-
+    
     
     var body: some View {
         List {

@@ -83,7 +83,7 @@ struct UserInfoCellView: View {
         user: User(
             name: "Лилия",
             email: "test@mail.ru",
-            imageName: "meditationPerson" // Replace with your actual image name
+            imageName: "meditationPerson"
         )
     )
 }

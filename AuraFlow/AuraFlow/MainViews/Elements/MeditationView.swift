@@ -55,16 +55,16 @@ struct MeditationView: View {
                                 .foregroundColor(playbackManager.isPlaying && isPlayingThisMeditation ? Color(uiColor: .CalliopeBlack()).opacity(0.7) : Color(uiColor: .CalliopeWhite()).opacity(0.7))
                                 .padding(.vertical, 5)
                                 .padding(.horizontal, 10)
-                                .frame(height: 30) // Фиксированная высота для всех тегов
+                                .frame(height: 30)
                                 .background(Color.clear)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 17)
                                         .stroke(playbackManager.isPlaying && isPlayingThisMeditation ? Color.gray.opacity(0.3) : Color.gray.opacity(0.3), lineWidth: 1)
                                 )
                                 .cornerRadius(17)
-                                .lineLimit(1) // Ограничение строки в одну линию
-                                .minimumScaleFactor(0.8) // Масштабирование текста при нехватке места
-                                .layoutPriority(1) // Приоритет для текста
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                                .layoutPriority(1)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)

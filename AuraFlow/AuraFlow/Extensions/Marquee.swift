@@ -47,7 +47,7 @@ struct Marquee: View{
         }
         .frame(height: storedSize.height)
         // MARK: Opacity Effect
-       
+        
         // Disbaling Manual Scrolling
         .disabled(true)
         .onAppear{
@@ -108,4 +108,3 @@ struct Marquee: View{
         return size
     }
 }
-

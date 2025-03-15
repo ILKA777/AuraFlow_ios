@@ -18,7 +18,6 @@ struct MattersMostView: View {
             VStack {
                 
                 VStack(spacing: 30) {
-                    // Title
                     Text("Что волнует")
                         .font(Font.custom("Montserrat-MediumItalic", size: 40))
                         .foregroundColor(Color(uiColor: .CalliopeWhite()))
@@ -38,7 +37,6 @@ struct MattersMostView: View {
                         .offset(x: 10, y: -40)
                 }
                 .padding(.top, -20)
-                // Age options
                 VStack(spacing: 16) {
                     NavigationLink(destination: MeditationSkillsView(viewModel: viewModel)) {
                         CustomButton(text: "Работа и развитие")
@@ -86,7 +84,6 @@ struct MattersMostView: View {
                 
                 Spacer()
                 
-                // Back button
                 Button(action: {
                     viewModel.removeLastResponse()
                     dismiss()

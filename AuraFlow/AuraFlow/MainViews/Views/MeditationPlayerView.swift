@@ -42,7 +42,7 @@ struct MeditationPlayerView: View {
     
     // Новое состояние для отслеживания времени входа
     @State private var viewAppearTime: Date? = nil
-
+    
     init(meditation: Meditation, album: MeditationAlbum) {
         self.meditation = meditation
         self.album = album

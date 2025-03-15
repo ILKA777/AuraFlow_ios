@@ -41,7 +41,7 @@ struct TabBarView: View {
             UITabBar.appearance().scrollEdgeAppearance = appearance
         }
     }
-
+    
     var body: some View {
         TabView(selection: $selectedTab) {
             MainView(selectedTab: $selectedTab) // Передаем binding

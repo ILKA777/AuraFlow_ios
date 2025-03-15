@@ -90,31 +90,31 @@ struct OnboardingSliderView<Content>: View where Content: View {
                         NavigationLink(destination: TabBarView()
                             .ignoresSafeArea(.keyboard)
                             .navigationBarBackButtonHidden(true)) {
-                            HStack(spacing: 25) {
-                                Text("Начнём?")
-                                    .font(Font.custom("Montserrat-SemiBold", size: 18))
-                                    .foregroundColor(Color(uiColor: .CalliopeBlack()))
-                                ZStack {
-                                    Circle()
-                                        .fill(Color(uiColor: .AuraFlowBlue()).opacity(0.4))  // Полупрозрачный круг
-                                        .frame(width: 64, height: 64)    // Размер круга
-                                    Image(systemName: "arrow.right")
-                                        .foregroundColor(Color(uiColor: .CalliopeBlack()))  // Цвет стрелки
-                                        .scaleEffect(x: 1.5, y: 1.5)
+                                HStack(spacing: 25) {
+                                    Text("Начнём?")
+                                        .font(Font.custom("Montserrat-SemiBold", size: 18))
+                                        .foregroundColor(Color(uiColor: .CalliopeBlack()))
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color(uiColor: .AuraFlowBlue()).opacity(0.4))  // Полупрозрачный круг
+                                            .frame(width: 64, height: 64)    // Размер круга
+                                        Image(systemName: "arrow.right")
+                                            .foregroundColor(Color(uiColor: .CalliopeBlack()))  // Цвет стрелки
+                                            .scaleEffect(x: 1.5, y: 1.5)
+                                    }
                                 }
+                                .offset(y: 20)
+                                .padding()
                             }
-                            .offset(y: 20)
-                            .padding()
-                        }
                     }
-
+                    
                 }
                 
                 Spacer()
                     .frame(height: 20)
             }
         }
-        .animation(.easeInOut(duration: 0.3), value: index) // Apply consistent animation for index changes
+        .animation(.easeInOut(duration: 0.3), value: index)
     }
     
     private func offset(in geometry: GeometryProxy) -> CGFloat {

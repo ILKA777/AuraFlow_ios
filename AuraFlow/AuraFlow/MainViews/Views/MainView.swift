@@ -11,25 +11,22 @@ import SwiftUI
 struct MainView: View {
     @Binding var selectedTab: TabBarView.Tab
     @FocusState private var isInputActive: Bool
-    @State private var searchText: String = ""
-    @State private var keyboardHeight: CGFloat = 0
-    @State private var shouldShowBreathingPractice = false
     
+    // Используем ViewModel для управления состоянием
+    @StateObject private var viewModel = MainViewModel()
     @StateObject private var playbackManager = PlaybackManager.shared
-    
-    @State private var navigationPath = NavigationPath()
     
     let tags = ["Природа", "Звуки", "Релакс", "Гармония", "Работа", "Личный рост"]
     let skyMeditationURL = Bundle.main.url(forResource: "skyMeditation", withExtension: "mp4")?.absoluteString ?? ""
     
     var body: some View {
-        NavigationStack(path: $navigationPath) {
+        NavigationStack(path: $viewModel.navigationPath) {
             ZStack {
-                if shouldShowBreathingPractice {
-                    StartView(
+                if viewModel.shouldShowBreathingPractice {
+                    StartViewForBreathingTechniques(
                         videoURL: URL(string: skyMeditationURL)!,
                         onPracticeCompleted: {
-                            shouldShowBreathingPractice = false
+                            viewModel.shouldShowBreathingPractice = false
                         }
                     )
                 } else {
@@ -43,18 +40,19 @@ struct MainView: View {
                             VStack {
                                 VStack(spacing: 10) {
                                     HStack {
-                                        MainSearchBar(searchText: $searchText)
+                                        MainSearchBar(searchText: $viewModel.searchText)
                                             .frame(maxWidth: .infinity)
                                             .padding(.leading, -8)
                                             .offset(x: 10)
                                             .focused($isInputActive)
                                         
                                         Spacer()
-                                        if isInputActive || searchText != "" {
+                                        
+                                        if isInputActive || !viewModel.searchText.isEmpty {
                                             HStack {
                                                 Button(action: {
                                                     // Сброс поиска и закрытие клавиатуры
-                                                    searchText = ""
+                                                    viewModel.searchText = ""
                                                     isInputActive = false
                                                 }) {
                                                     ZStack {
@@ -71,7 +69,6 @@ struct MainView: View {
                                                         RoundedRectangle(cornerRadius: 50)
                                                             .stroke(Color.gray, lineWidth: 1)
                                                     )
-                                                    
                                                     .padding(.trailing, 16)
                                                 }
                                                 if isInputActive {
@@ -79,7 +76,6 @@ struct MainView: View {
                                                         .fill(.clear)
                                                         .frame(width: 40, height: 40)
                                                 }
-                                                
                                             }
                                         } else {
                                             HStack {
@@ -100,11 +96,9 @@ struct MainView: View {
                                                     .padding(.trailing, 16)
                                                 }
                                             }
-                                            
                                         }
                                     }
                                     .padding(.top, (UIApplication.shared.windows.first?.safeAreaInsets.top ?? 40) + 10)
-                                    
                                     .padding(.bottom, 20)
                                     
                                     if isInputActive {
@@ -113,7 +107,7 @@ struct MainView: View {
                                                 ForEach(tags, id: \.self) { tag in
                                                     Button(action: {
                                                         DispatchQueue.main.async {
-                                                            searchText = tag
+                                                            viewModel.searchText = tag
                                                             isInputActive = true
                                                         }
                                                     }) {
@@ -135,7 +129,7 @@ struct MainView: View {
                                     }
                                 }
                                 
-                                if searchText.isEmpty && !isInputActive {
+                                if viewModel.searchText.isEmpty && !isInputActive {
                                     ScrollView(showsIndicators: false) {
                                         VStack {
                                             HStack {
@@ -145,7 +139,7 @@ struct MainView: View {
                                                 
                                                 Spacer()
                                                 
-                                                NavigationLink(destination: AllAlbumsView(navigationPath: $navigationPath)) {
+                                                NavigationLink(destination: AllAlbumsView(navigationPath: $viewModel.navigationPath)) {
                                                     Text("Все")
                                                         .foregroundColor(Color(uiColor: .CalliopeWhite()))
                                                         .bold()
@@ -158,7 +152,7 @@ struct MainView: View {
                                             ScrollView(.horizontal, showsIndicators: false) {
                                                 HStack(spacing: -10) {
                                                     ForEach(sampleAlbums) { album in
-                                                        MeditationAlbumView(album: album, width: UIScreen.main.bounds.width * 0.51, height: 210, navigationPath: $navigationPath)
+                                                        MeditationAlbumView(album: album, width: UIScreen.main.bounds.width * 0.51, height: 210, navigationPath: $viewModel.navigationPath)
                                                     }
                                                 }
                                             }
@@ -186,15 +180,15 @@ struct MainView: View {
                                                 }
                                             }
                                             .padding(.top, 10)
-                                            .padding(.bottom, playbackManager.isMiniPlayerVisible ? (UIScreen.main.bounds.height == 667 ? 220 : 220) : (UIScreen.main.bounds.height == 667 ? 140 : 100)) // Динамическое изменение нижнего отступа
+                                            .padding(.bottom, playbackManager.isMiniPlayerVisible ? 220 : 100)
                                         }
                                     }
                                     .padding(.top, -20)
-                                    .padding(.bottom, keyboardHeight)
+                                    .padding(.bottom, viewModel.keyboardHeight)
                                 } else {
                                     ScrollView {
                                         VStack(alignment: .leading, spacing: 60) {
-                                            if !filteredAlbums.isEmpty {
+                                            if !viewModel.filteredAlbums.isEmpty {
                                                 Text("Альбомы")
                                                     .font(Font.custom("Montserrat-Regular", size: 24))
                                                     .foregroundColor(Color(uiColor: .CalliopeWhite()))
@@ -202,18 +196,18 @@ struct MainView: View {
                                                     .padding(.top, 20)
                                                     .padding(.bottom, -20)
                                                 
-                                                ForEach(filteredAlbums) { album in
-                                                    MeditationAlbumView(album: album, width: UIScreen.main.bounds.width - 40, height: 100, navigationPath: $navigationPath)
+                                                ForEach(viewModel.filteredAlbums) { album in
+                                                    MeditationAlbumView(album: album, width: UIScreen.main.bounds.width - 40, height: 100, navigationPath: $viewModel.navigationPath)
                                                 }
                                             }
                                             
-                                            if !filteredMeditations.isEmpty {
+                                            if !viewModel.filteredMeditations.isEmpty {
                                                 Text("Медитации")
                                                     .font(Font.custom("Montserrat-Regular", size: 24))
                                                     .foregroundColor(Color(uiColor: .CalliopeWhite()))
                                                     .padding(.leading, 16)
                                                 
-                                                ForEach(filteredMeditations) { meditation in
+                                                ForEach(viewModel.filteredMeditations) { meditation in
                                                     MeditationListItemView(meditation: meditation, isInputActive: isInputActive) {
                                                         // Создаем временный альбом с одной медитацией
                                                         let tempAlbum = MeditationAlbum(
@@ -222,20 +216,17 @@ struct MainView: View {
                                                             tracks: [meditation],
                                                             status: "Пополняется"
                                                         )
-                                                        
                                                         Task {
                                                             await playbackManager.playAlbum(album: tempAlbum)
                                                         }
                                                     }
                                                 }
                                                 .padding(.top, -40)
-                                                
                                             }
                                         }
                                     }
-                                    
                                     .padding(.top, 10)
-                                    .padding(.bottom, isInputActive ? keyboardHeight + 120 : (playbackManager.isMiniPlayerVisible ? keyboardHeight + 150 : keyboardHeight + 40))
+                                    .padding(.bottom, isInputActive ? viewModel.keyboardHeight + 120 : (playbackManager.isMiniPlayerVisible ? viewModel.keyboardHeight + 150 : viewModel.keyboardHeight + 40))
                                 }
                             }
                             .navigationBarHidden(true)
@@ -243,18 +234,12 @@ struct MainView: View {
                                 isInputActive = false
                             }
                         }
-                        .offset(y: UIScreen.main.bounds.height == 667 ? keyboardHeight / 2.25 : keyboardHeight / 2.30)
+                        .offset(y: UIScreen.main.bounds.height == 667 ? viewModel.keyboardHeight / 2.25 : viewModel.keyboardHeight / 2.30)
                         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
-                            if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
-                                withAnimation {
-                                    keyboardHeight = keyboardFrame.height
-                                }
-                            }
+                            viewModel.updateKeyboardHeight(notification)
                         }
                         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
-                            withAnimation {
-                                keyboardHeight = 0
-                            }
+                            viewModel.resetKeyboardHeight()
                         }
                         .navigationBarTitleDisplayMode(.inline)
                         .ignoresSafeArea(.keyboard, edges: .all)
@@ -263,45 +248,17 @@ struct MainView: View {
                 
                 VStack {
                     Spacer()
-                    
                     if playbackManager.isMiniPlayerVisible && playbackManager.currentMeditation != nil {
                         MiniPlayerView(playbackManager: playbackManager)
-                        //                            .transition(.move(edge: .bottom).combined(with: .opacity))
-                        //                            .animation(.easeInOut)
                             .frame(width: UIScreen.main.bounds.width)
                             .padding(.bottom, 50)
                     }
                 }
                 .ignoresSafeArea(edges: .bottom)
-                //.padding(.bottom, 0)
             }
         }
         .onAppear {
-            shouldShowBreathingPractice = UserDefaults.standard.bool(forKey: "launchWithBreathingPractice")
-        }
-    }
-    
-    var filteredAlbums: [MeditationAlbum] {
-        if searchText.isEmpty {
-            return []
-        } else {
-            return sampleAlbums.filter { album in
-                let searchLowercased = searchText.lowercased()
-                return album.title.lowercased().contains(searchLowercased) ||
-                album.author.lowercased().contains(searchLowercased) // Проверка на автора альбома
-            }
-        }
-    }
-    
-    var filteredMeditations: [Meditation] {
-        if searchText.isEmpty {
-            return []
-        } else {
-            return sampleMeditations.filter { meditation in
-                let searchLowercased = searchText.lowercased()
-                return meditation.title.lowercased().contains(searchLowercased) ||
-                meditation.author.lowercased().contains(searchLowercased) // Проверка на автора медитации
-            }
+            viewModel.shouldShowBreathingPractice = UserDefaults.standard.bool(forKey: "launchWithBreathingPractice")
         }
     }
 }

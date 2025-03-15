@@ -9,9 +9,7 @@ import SwiftUI
 
 struct PurchaseHistoryView: View {
     
-    @Environment(\.dismiss) private var dismiss // Access the dismiss environment action
-    
-    // Example purchase data
+    @Environment(\.dismiss) private var dismiss
     let purchases: [Purchase] = [
         Purchase(name: "Подписка", date: "сегодня", amount: "-399 ₽"),
         Purchase(name: "Пакет Природа", date: "23.02", amount: "-199 ₽")
@@ -40,11 +38,10 @@ struct PurchaseHistoryView: View {
                 }
             }
             .background(Color.clear)
-            .scrollContentBackground(.hidden) // iOS 16 specific, to hide the default list background
+            .scrollContentBackground(.hidden)
             
             Spacer()
             
-            // Footer Options
             VStack(alignment: .leading, spacing: 10) {
                 Button(action: {
                     print("Поддержка tapped")
@@ -57,7 +54,6 @@ struct PurchaseHistoryView: View {
                 }
                 .padding(.bottom, -25)
                 
-                
                 Button(action: {
                     print("Восстановить покупки tapped")
                 }) {
@@ -68,24 +64,24 @@ struct PurchaseHistoryView: View {
                         .padding()
                 }
             }
-            .padding(.leading, 10)  // Padding from the left edge
-            .padding(.bottom, 20)   // Padding from the bottom
+            .padding(.leading, 10)
+            .padding(.bottom, 20)
         }
         .background(
-            Image("default") // Replace with your image asset name
+            Image("default")
                 .resizable()
                 .scaledToFill()
                 .ignoresSafeArea()
         )
         .navigationTitle("История покупок")
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true) // Hide default back button title
+        .navigationBarBackButtonHidden(true)
         .tint(Color(uiColor: .CalliopeWhite()))
         .toolbar {
-            ToolbarItem(placement: .principal) { // Use .principal to customize the title
+            ToolbarItem(placement: .principal) {
                 Text("Подписка и покупки")
                     .font(.headline)
-                    .foregroundColor(Color(uiColor: .CalliopeWhite())) // Set the desired color here
+                    .foregroundColor(Color(uiColor: .CalliopeWhite()))
             }
             
             ToolbarItem(placement: .navigationBarLeading) {

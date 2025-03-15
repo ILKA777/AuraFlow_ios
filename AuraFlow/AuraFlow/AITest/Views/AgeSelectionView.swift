@@ -16,7 +16,6 @@ struct AgeSelectionView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                // Title
                 VStack(spacing: 30) {
                     Text("Укажите")
                         .font(Font.custom("Montserrat-MediumItalic", size: 46))
@@ -37,7 +36,7 @@ struct AgeSelectionView: View {
                         .offset(x: 10, y: -40)
                 }
                 .padding(.top, -20)
-                // Age options
+                
                 VStack(spacing: 16) {
                     NavigationLink(destination: MattersMostView(viewModel: viewModel)) {
                         CustomButton(text: "До 21")
@@ -78,7 +77,6 @@ struct AgeSelectionView: View {
                 
                 Spacer()
                 
-                // Back button
                 Button(action: {
                     viewModel.removeLastResponse()
                     dismiss()

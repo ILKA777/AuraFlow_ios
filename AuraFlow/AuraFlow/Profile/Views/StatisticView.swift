@@ -9,68 +9,17 @@
 import SwiftUI
 import UIKit
 
-// MARK: - Кольцо прогресса
-struct ProgressRingView: View {
-    var progress: CGFloat  // значение от 0 до 1
-    
-    var body: some View {
-        ZStack {
-            // Фоновый круг (не заполненный)
-            Circle()
-                .stroke(Color.gray.opacity(0.3), lineWidth: 10)
-            
-            // Заполненный сегмент
-            Circle()
-                .trim(from: 0, to: min(progress, 1))
-                .stroke(
-                    Color(uiColor: .AuraFlowBlue()),
-                    style: StrokeStyle(lineWidth: 10, lineCap: .round)
-                )
-                .rotationEffect(Angle(degrees: -90))
-            
-            // Текст в центре – процент выполнения
-            Text("\(Int(min(progress, 1) * 100))%")
-                .font(Font.custom("Montserrat-Semibold", size: 20))
-                .foregroundColor(Color(uiColor: .AuraFlowBlue()))
-        }
-    }
-}
-
-// MARK: - Popup View для выбранного дня
-struct DayProgressPopupView: View {
-    var meditationMinutes: Double
-    var targetMinutes: Double
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            ProgressRingView(progress: CGFloat(meditationMinutes / targetMinutes))
-                .frame(width: 100, height: 200)
-            
-            Text("В этот день вы были активны \(Int(meditationMinutes)) минут из \(Int(targetMinutes))")
-                .font(Font.custom("Montserrat-Regular", size: 16))
-                .foregroundColor(.black)
-                .multilineTextAlignment(.center)
-        }
-        .padding()
-        .background(.white)
-        .cornerRadius(12)
-        .shadow(radius: 10)
-    }
-}
-
-// MARK: - Основное представление статистики
 struct StatisticView: View {
     
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var viewModel = ResponseViewModel() // Если нужен
-    @StateObject private var statisticsManager = StatisticService.shared // Менеджер статистики
+    @StateObject private var viewModel = ResponseViewModel()
+    @StateObject private var statisticsManager = StatisticService.shared
     @StateObject private var playbackManager = PlaybackManager.shared
     @State private var shouldShowBreathingPractice = false
     @State private var date = Date()
     
-    // Флаг для показа popup view
     @State private var showPopup: Bool = false
-
+    
     var body: some View {
         GeometryReader { geometry in
             NavigationStack {
@@ -81,7 +30,6 @@ struct StatisticView: View {
                         .position(x: geometry.size.width / 2, y: -40)
                     
                     VStack {
-                        // Верхняя часть с динамическим количеством минут и кольцом прогресса
                         HStack {
                             Text("\(Int(statisticsManager.meditationMinutes))/\(Int(statisticsManager.targetMinutes))")
                                 .font(Font.custom("Montserrat-Semibold", size: 50))
@@ -109,7 +57,6 @@ struct StatisticView: View {
                         .padding(.horizontal, 10)
                         .position(x: geometry.size.width / 2, y: 40)
                         
-                        // DatePicker для выбора дня
                         ZStack {
                             RoundedRectangle(cornerRadius: 32, style: .continuous)
                                 .fill(Color.white.opacity(0.15))
@@ -125,7 +72,6 @@ struct StatisticView: View {
                             .colorScheme(.dark)
                             .accentColor(Color(uiColor: .AuraFlowPink()))
                             .frame(width: geometry.size.width * 0.9)
-                            // При выборе дня показываем popup
                             .onChange(of: date) { newDate in
                                 withAnimation { showPopup = true }
                             }
@@ -134,7 +80,6 @@ struct StatisticView: View {
                     }
                     .padding(.top, -20)
                     
-                    // Если popup показан, добавляем прозрачное покрытие, реагирующее на тап
                     if showPopup {
                         Color.clear
                             .contentShape(Rectangle())

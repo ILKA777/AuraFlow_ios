@@ -16,7 +16,6 @@ struct MeditationDurationView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                // Title
                 VStack(spacing: 30) {
                     Text("Какая длительность")
                         .font(Font.custom("Montserrat-MediumItalic", size: 32))
@@ -38,7 +37,6 @@ struct MeditationDurationView: View {
                     
                 }
                 .padding(.top, -20)
-                // Age options
                 VStack(spacing: 16) {
                     NavigationLink(destination: PersonalisedСompilationView(viewModel: viewModel)) {
                         CustomButton(text: "Около 5 минут в день")
@@ -72,7 +70,6 @@ struct MeditationDurationView: View {
                 
                 Spacer()
                 
-                // Back button
                 Button(action: {
                     viewModel.removeLastResponse()
                     dismiss()

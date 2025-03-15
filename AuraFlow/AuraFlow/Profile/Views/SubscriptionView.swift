@@ -9,19 +9,16 @@ import SwiftUI
 
 struct SubscriptionView: View {
     @State private var isSubscriptionActive = true
-    @Environment(\.dismiss) private var dismiss // Access the dismiss environment action
-    
-    // Example subscription instance
+    @Environment(\.dismiss) private var dismiss
     private let subscription = Subscription(
         id: UUID(),
-        startDate: Date(), // Set the start date to the current date
-        endDate: Calendar.current.date(byAdding: .year, value: 1, to: Date())!, // Set the end date to one year from now
+        startDate: Date(),
+        endDate: Calendar.current.date(byAdding: .year, value: 1, to: Date())!,
         type: .yearly
     )
     
     var body: some View {
         VStack(spacing: 20) {
-            // Subscription Information
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     Text("Подписка")
@@ -54,8 +51,7 @@ struct SubscriptionView: View {
             )
             .padding(.horizontal)
             .offset(y: 20)
-            
-            // Purchase History Button
+
             NavigationLink(destination: PurchaseHistoryView()) {
                 HStack {
                     Text("История покупок")
@@ -80,30 +76,30 @@ struct SubscriptionView: View {
             Spacer()
         }
         .background(
-            Image("default") // Replace with your image asset name
+            Image("default")
                 .resizable()
                 .scaledToFill()
                 .ignoresSafeArea()
         )
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true) // Hide default back button title
+        .navigationBarBackButtonHidden(true)
         .toolbar {
-            ToolbarItem(placement: .principal) { // Use .principal to customize the title
+            ToolbarItem(placement: .principal) {
                 Text("Подписка и покупки")
                     .font(.headline)
-                    .foregroundColor(Color(uiColor: .CalliopeWhite())) // Set the desired color here
+                    .foregroundColor(Color(uiColor: .CalliopeWhite()))
             }
             
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: {
-                    dismiss() // Dismiss the current view to navigate back
+                    dismiss()
                 }) {
                     Image(systemName: "chevron.left")
-                        .foregroundColor(Color(uiColor: .CalliopeWhite())) // White back button
+                        .foregroundColor(Color(uiColor: .CalliopeWhite()))
                 }
             }
         }
-        .tint(Color(uiColor: .CalliopeWhite())) // Set the tint color for navigation items to white
+        .tint(Color(uiColor: .CalliopeWhite()))
     }
     
     private func formattedDate(_ date: Date) -> String {

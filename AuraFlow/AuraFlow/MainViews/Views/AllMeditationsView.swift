@@ -10,10 +10,9 @@ import SwiftUI
 struct AllMeditationsView: View {
     @Environment(\.dismiss) private var dismiss
     @FocusState private var isInputActive: Bool
-    @FocusState private var isSearching: Bool // State to track search bar visibility
-    @State private var searchText = "" // State to track search query
+    @FocusState private var isSearching: Bool
+    @State private var searchText = ""
     
-    // Sample data for 10 test meditations
     let meditations = [
         sampleMeditations[0],
         sampleMeditations[1],
@@ -74,7 +73,6 @@ struct AllMeditationsView: View {
                         .padding(.trailing, -20)
                 }
             }
-           // .padding(.top, 30)
             .ignoresSafeArea(.keyboard)
             
             ScrollView {
@@ -87,14 +85,14 @@ struct AllMeditationsView: View {
             }
         }
         .background(
-            Image("default") // Replace with your image name
+            Image("default")
                 .resizable()
                 .scaledToFill()
                 .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
                 .ignoresSafeArea()
         )
         .onTapGesture {
-            self.hideKeyboard() // Hide keyboard when tapping outside
+            self.hideKeyboard()
         }
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)

@@ -16,7 +16,6 @@ struct GenderSelectionView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                // Title
                 VStack(spacing: 30) {
                     Text("Укажите")
                         .font(Font.custom("Montserrat-MediumItalic", size: 46))
@@ -37,7 +36,6 @@ struct GenderSelectionView: View {
                         .offset(x: 10, y: -40)
                 }
                 .padding(.top, -20)
-                // Gender options
                 VStack(spacing: 16) {
                     NavigationLink(destination: AgeSelectionView(viewModel: viewModel)) {
                         CustomButton(text: "Мужской")
@@ -71,7 +69,6 @@ struct GenderSelectionView: View {
                 
                 Spacer()
                 
-                // Back button
                 Button(action: {
                     dismiss()
                 }) {

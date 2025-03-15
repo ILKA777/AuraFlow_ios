@@ -39,12 +39,11 @@ struct MeditationListView: View {
             }
         }
     }
-
+    
     func stopScrolling() {
         timer?.invalidate()
         timer = nil
     }
-
     
     var body: some View {
         ZStack {
@@ -114,7 +113,6 @@ struct MeditationListView: View {
                 if !isSearching {
                     HStack(spacing: 20) {
                         Button(action: {
-                            // Add action for Like button here
                         }) {
                             ZStack {
                                 Circle()
@@ -170,7 +168,6 @@ struct MeditationListView: View {
                 
                 Spacer()
                 
-                // Meditation List
                 List {
                     ForEach(filteredMeditations, id: \.id) { meditation in
                         Button(action: {
@@ -179,7 +176,6 @@ struct MeditationListView: View {
                             Task {
                                 // Запуск альбома с выбранного трека и переход к MeditationPlayerView
                                 await playbackManager.playAlbum(from: album, startingAt: meditation)
-                                  // Инициируем переход
                             }
                         }) {
                             HStack {
@@ -235,7 +231,6 @@ struct MeditationListView: View {
                     MeditationPlayerView(meditation: meditation, album: album)
                 }
         )
-
     }
     
     private var filteredMeditations: [Meditation] {
@@ -250,6 +245,3 @@ struct MeditationListView: View {
         playbackManager.currentMeditation?.id == meditation.id
     }
 }
-
-
-

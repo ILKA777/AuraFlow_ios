@@ -15,7 +15,7 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
             WCSession.default.activate()
         }
     }
-
+    
     // Обработчик при активации сессии
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
         if let error = error {
@@ -24,18 +24,17 @@ class WatchSessionManager: NSObject, WCSessionDelegate {
             print("WCSession успешно активирована с состоянием: \(activationState.rawValue)")
         }
     }
-
+    
     // Обязательный метод для iOS: обработка, если сессия становится неактивной
     func sessionDidBecomeInactive(_ session: WCSession) {
         print("Сессия WCSession стала неактивной")
     }
-
+    
     // Обязательный метод для iOS: обработка, если сессия деактивирована
     func sessionDidDeactivate(_ session: WCSession) {
         print("Сессия WCSession деактивирована")
-
+        
         // Если нужно, активируйте сессию снова
         WCSession.default.activate()
     }
 }
-

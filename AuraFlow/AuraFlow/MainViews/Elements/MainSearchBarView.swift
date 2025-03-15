@@ -28,7 +28,7 @@ struct MainSearchBar: View {
             }
             
             NavigationLink(destination: AIIntroView()) {
-                Image("searchCircle") // Замените "circlePhoto" на имя изображения в ассетах
+                Image("searchCircle")
                     .resizable()
                     .frame(width: 30, height: 30)
                     .clipShape(Circle())
@@ -46,4 +46,3 @@ struct MainSearchBar: View {
         .padding(.horizontal)
     }
 }
-

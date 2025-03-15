@@ -18,7 +18,7 @@ struct MeditationAlbum: Identifiable, Equatable {
         tracks.count
     }
     // Conformance to Equatable
-        static func ==(lhs: MeditationAlbum, rhs: MeditationAlbum) -> Bool {
-            lhs.id == rhs.id
-        }
+    static func ==(lhs: MeditationAlbum, rhs: MeditationAlbum) -> Bool {
+        lhs.id == rhs.id
+    }
 }

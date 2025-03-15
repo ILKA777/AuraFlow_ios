@@ -58,7 +58,7 @@ struct MeditationAlbumView: View {
                                 } else {
                                     await playbackManager.playAlbum(album: album)
                                 }
-                                updatePlayingState()  // Прямое обновление состояния после действия
+                                updatePlayingState()
                             }
                         }) {
                             ZStack {
@@ -69,7 +69,7 @@ struct MeditationAlbumView: View {
                                     .foregroundColor(isPlaying ? Color(uiColor: .CalliopeBlack()) : Color(uiColor: .AuraFlowBlue()))
                             }
                         }
-                        .buttonStyle(PlainButtonStyle()) // Prevents the button from being captured by the NavigationLink
+                        .buttonStyle(PlainButtonStyle())
                     }
                     .offset(y: -10)
                 }
@@ -78,7 +78,7 @@ struct MeditationAlbumView: View {
             .frame(width: width, height: height)
             .padding(.horizontal)
             .onAppear {
-                updatePlayingState() // Убедиться, что состояние актуально при появлении
+                updatePlayingState()
             }
             .onReceive(playbackManager.$currentAlbum) { _ in
                 updatePlayingState()
@@ -88,7 +88,7 @@ struct MeditationAlbumView: View {
             }
             .animation(.easeInOut, value: isPlaying)
         }
-        .buttonStyle(PlainButtonStyle()) // This removes the default NavigationLink styling
+        .buttonStyle(PlainButtonStyle())
     }
     
     private var isPlayingThisAlbum: Bool {
@@ -101,7 +101,3 @@ struct MeditationAlbumView: View {
         }
     }
 }
-
-
-
-

@@ -8,7 +8,7 @@
 import SwiftUI
 import AVKit
 
-struct StartView: View {
+struct StartViewForBreathingTechniques: View {
     // URL видео
     let videoURL: URL
     var onPracticeCompleted: () -> Void // Замыкание для завершения практики

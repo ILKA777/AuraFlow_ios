@@ -48,7 +48,7 @@ struct AllAlbumsView: View {
             status: "Альбом завершен"
         )
     ]
-
+    
     let columns = [
         GridItem(.flexible(), spacing: 20),
         GridItem(.flexible(), spacing: 20)
@@ -108,7 +108,7 @@ struct AllAlbumsView: View {
                         .padding(.trailing, -20)
                 }
             }
-           // .padding(.top, 30)
+            // .padding(.top, 30)
             .ignoresSafeArea(.keyboard)
             
             ScrollView {
@@ -152,4 +152,3 @@ extension View {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
-

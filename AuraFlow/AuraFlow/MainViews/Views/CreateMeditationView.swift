@@ -11,23 +11,13 @@ import AVKit
 import Charts
 
 struct CreateMeditationView: View {
-    @State private var selectedDuration = 5
-    @State private var melodyPrompt = ""
-    @State private var meditationPrompt = ""
-    @State private var audioPrompt = ""
-    @State private var selectedVideo: VideoForGeneration? = nil
-    
-    let durations = [5, 10, 15, 20, 30, 45, 60]  // Available meditation durations
-    @State private var duration: Double = 5
-    
-    @State private var showPopup: Bool = false
-    @State private var navigateToPlayer: Bool = false
+    @StateObject private var viewModel = CreateMeditationViewModel()
     
     var body: some View {
         NavigationStack {
             ZStack {
                 VStack(spacing: 20) {
-                    // Title and Duration Controls
+                    // Заголовок и управление длительностью
                     HStack {
                         HStack {
                             Text("Время медитации: ")
@@ -35,7 +25,7 @@ struct CreateMeditationView: View {
                                 .font(.system(size: 18)).bold()
                             
                             Spacer()
-                            Text("\(Int(duration)) мин.")
+                            Text("\(Int(viewModel.duration)) мин.")
                                 .foregroundColor(.white)
                                 .font(.system(size: 18)).bold()
                                 .padding(.trailing, 25)
@@ -45,9 +35,7 @@ struct CreateMeditationView: View {
                         Spacer()
                         
                         Button(action: {
-                            if duration > 0 {
-                                duration -= 1
-                            }
+                            viewModel.decrementDuration()
                         }) {
                             Text("-")
                                 .font(.title)
@@ -59,12 +47,8 @@ struct CreateMeditationView: View {
                         .offset(x: -15)
                         .padding(10)
                         
-                        
-                        
                         Button(action: {
-                            if duration < 30 {
-                                duration += 1
-                            }
+                            viewModel.incrementDuration()
                         }) {
                             Text("+")
                                 .font(.title)
@@ -75,12 +59,9 @@ struct CreateMeditationView: View {
                         .contentShape(Rectangle())
                         .offset(x: -20)
                         .padding(10)
-                        
                     }
-                    // .padding(.top, 30)
                     
-                    
-                    // Melody Prompt Field
+                    // Выбор шаблона (видео)
                     VStack(alignment: .leading) {
                         Text("Выберите шаблон")
                             .foregroundColor(.white)
@@ -89,9 +70,9 @@ struct CreateMeditationView: View {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 16) {
                                 ForEach(videosForGeneration, id: \.title) { video in
-                                    VideoCell(video: video, isSelected: video.title == selectedVideo?.title)
+                                    VideoCell(video: video, isSelected: video.title == viewModel.selectedVideo?.title)
                                         .onTapGesture {
-                                            selectedVideo = video
+                                            viewModel.selectedVideo = video
                                         }
                                 }
                             }
@@ -100,22 +81,21 @@ struct CreateMeditationView: View {
                         }
                     }
                     .padding(.horizontal)
-                    // .padding(.top, 10)
                     
-                    // Meditation Prompt Field
+                    // Поле ввода для описания медитации
                     VStack(alignment: .leading) {
                         Text("Какую вы бы хотели медитацию ?")
                             .foregroundColor(.white)
                             .font(.system(size: 18)).bold()
                         
                         ZStack(alignment: .leading) {
-                            if meditationPrompt.isEmpty {
+                            if viewModel.meditationPrompt.isEmpty {
                                 Text("Опишите свое состояние, и то какой результат вы хотите получить от медитации.")
                                     .bold()
                                     .foregroundColor(Color(uiColor: .lightGray))
                                     .padding(.top, -40)
                             }
-                            TextEditor(text: $meditationPrompt)
+                            TextEditor(text: $viewModel.meditationPrompt)
                                 .onTapGesture {
                                     hideKeyboard()
                                 }
@@ -133,23 +113,23 @@ struct CreateMeditationView: View {
                     .padding(.horizontal)
                     .padding(.top, -10)
                     
+                    // Поле ввода для описания мелодии
                     VStack(alignment: .leading) {
                         Text("Какую вы бы хотели мелодию ?")
                             .foregroundColor(.white)
                             .font(.system(size: 18)).bold()
                         
                         ZStack(alignment: .leading) {
-                            if audioPrompt.isEmpty {
+                            if viewModel.audioPrompt.isEmpty {
                                 Text("Опишите, какой должна быть мелодия для вашей медитации.")
                                     .bold()
                                     .foregroundColor(Color(uiColor: .lightGray))
                                     .padding(.top, -20)
                             }
-                            TextEditor(text: $audioPrompt)
+                            TextEditor(text: $viewModel.audioPrompt)
                                 .onTapGesture {
                                     hideKeyboard()
                                 }
-                            
                         }
                         .padding()
                         .background(RoundedRectangle(cornerRadius: 10).fill(Color.white))
@@ -162,17 +142,10 @@ struct CreateMeditationView: View {
                         )
                     }
                     .padding(.horizontal)
-                    //.padding(.top, 10)
                     
-                    // Create Meditation Button
+                    // Кнопка создания медитации
                     Button(action: {
-                        // По тапу показываем popup и запускаем таймер 10 сек
-                        showPopup = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                            showPopup = false
-                            navigateToPlayer = true
-                        }
-                        print("Создание медитации с длительностью: \(selectedDuration) минут, промптом для мелодии: \(melodyPrompt), промптом для медитации: \(meditationPrompt)")
+                        viewModel.createMeditation()
                     }) {
                         Text("Создать медитацию")
                             .font(.title2)
@@ -183,7 +156,6 @@ struct CreateMeditationView: View {
                     }
                     
                     Spacer()
-                    
                 }
                 .onTapGesture {
                     hideKeyboard()
@@ -195,24 +167,24 @@ struct CreateMeditationView: View {
                         .ignoresSafeArea()
                 )
                 
-                // Popup Overlay
-                if showPopup {
+                // Popup при создании медитации
+                if viewModel.showPopup {
                     CreatingMeditationPopupView()
                 }
                 
-                // Навигация к видео плееру после завершения "загрузки"
+                // Навигация к плееру после создания медитации
                 NavigationLink(
                     destination: Group {
-                        if let selectedVideo = selectedVideo, let url = URL(string: selectedVideo.videoLink) {
+                        if let selectedVideo = viewModel.selectedVideo,
+                           let url = URL(string: selectedVideo.videoLink) {
                             FullScreenMeditationVideoPlayerView(videoURL: url)
                         } else {
                             Text("Видео не выбрано")
                         }
                     },
-                    isActive: $navigateToPlayer,
+                    isActive: $viewModel.navigateToPlayer,
                     label: { EmptyView() }
                 )
-                
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -230,146 +202,4 @@ extension CreateMeditationView {
     func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
-}
-
-struct CreatingMeditationPopupView: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: .blue))
-                .scaleEffect(2.0)
-            Text("Создаю медитацию ✨")
-                .font(.title2)
-                .foregroundColor(.white)
-        }
-        .padding(20)
-        .background(Color.black.opacity(0.8))
-        .cornerRadius(12)
-        .shadow(radius: 10)
-    }
-}
-
-import SwiftUI
-import AVKit
-import Charts
-
-struct FullScreenMeditationVideoPlayerView: View {
-    let videoURL: URL
-    let audioURL = URL(string: "https://storage.googleapis.com/auraflow_bucket/audio/meditation_20250310_144922_1ae4b501.mp3")!
-    
-    @Environment(\.dismiss) private var dismiss
-    @State private var videoPlayer = AVPlayer()
-    @State private var audioPlayer = AVPlayer()
-    
-    @StateObject private var healthKitManager = HealthKitManager.shared
-    @StateObject private var playbackManager = PlaybackManager.shared
-    
-    @StateObject private var heartRateReceiver = HeartRateReceiver()
-    @State private var heartRateHistory: [Double] = []
-    
-    var body: some View {
-        ZStack(alignment: .topTrailing) {
-            VideoPlayer(player: videoPlayer)
-                .ignoresSafeArea()
-                .onAppear {
-                    Task {
-                        if playbackManager.isPlaying {
-                            await playbackManager.stopCurrent()
-                        }
-                        
-                        let videoItem = AVPlayerItem(url: videoURL)
-                        videoPlayer.replaceCurrentItem(with: videoItem)
-                        videoPlayer.play()
-                        
-                        let audioItem = AVPlayerItem(url: audioURL)
-                        audioPlayer.replaceCurrentItem(with: audioItem)
-                        audioPlayer.play()
-                    }
-                    
-                    Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
-                        let currentHR = heartRateReceiver.heartRate
-                        heartRateHistory.append(currentHR)
-                        if heartRateHistory.count > 20 {
-                            heartRateHistory.removeFirst()
-                        }
-                    }
-                }
-                .onDisappear {
-                    videoPlayer.pause()
-                    videoPlayer.replaceCurrentItem(with: nil)
-                    
-                    audioPlayer.pause()
-                    audioPlayer.replaceCurrentItem(with: nil)
-                }
-            
-            if healthKitManager.showPulseDuringVideo {
-                VStack {
-                    HStack {
-                        Spacer()
-                        VStack {
-                            Text("Пульс")
-                                .font(.caption)
-                                .foregroundColor(.white)
-                                .padding(.top, 4)
-                            
-                            Text("\(Int(heartRateReceiver.heartRate)) BPM")
-                                .font(.headline)
-                                .foregroundColor(.red)
-                                .padding(.vertical, 6)
-                                .padding(.horizontal, 12)
-                                .background(Color.black.opacity(0.7))
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                                .shadow(radius: 5)
-                            
-                            Chart {
-                                ForEach(heartRateHistory.indices, id: \..self) { index in
-                                    LineMark(
-                                        x: .value("Time", index),
-                                        y: .value("Heart Rate", heartRateHistory[index])
-                                    )
-                                    .interpolationMethod(.monotone)
-                                    .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
-                                    .foregroundStyle(LinearGradient(
-                                        gradient: Gradient(colors: [.red, .orange]),
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    ))
-                                }
-                            }
-                            .chartYAxis {
-                                AxisMarks(position: .leading, values: .automatic)
-                            }
-                            .chartXScale(domain: 0...max(Double(heartRateHistory.count) + 30, 30))
-                            .frame(width: 150, height: 100)
-                            .padding(.horizontal, 10)
-                            .background(Color.black.opacity(0.6))
-                            .cornerRadius(12)
-                            .shadow(radius: 5)
-                        }
-                        .padding()
-                    }
-                    Spacer()
-                }
-            }
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
-        .toolbar(.hidden, for: .tabBar)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: {
-                    dismiss()
-                }) {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(Color(uiColor: .CalliopeWhite()))
-                }
-            }
-        }
-    }
-}
-
-
-
-#Preview {
-    CreateMeditationView()
 }

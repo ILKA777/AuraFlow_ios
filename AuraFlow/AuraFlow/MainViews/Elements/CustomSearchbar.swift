@@ -13,19 +13,18 @@ struct CustomSearchbar: View {
     @State var state = false
     @State var progress: CGFloat = 1.0
     @State var showTextFi = false
-    @FocusState private var isTextFieldFocused: Bool // Состояние фокуса для TextField
-
+    @FocusState private var isTextFieldFocused: Bool
     var body: some View {
         ZStack(alignment: .trailing) {
             ZStack {
-                Capsule() // Изменено: используем Capsule для круглой формы
+                Capsule()
                 if showTextFi {
                     TextField("Поиск", text: $searchText)
                         .padding(.horizontal)
                         .foregroundColor(Color(uiColor: .CalliopeWhite()))
-                        .focused($isTextFieldFocused) // Установка фокуса на TextField
+                        .focused($isTextFieldFocused)
                         .onAppear {
-                            isTextFieldFocused = true // Устанавливаем фокус при появлении TextField
+                            isTextFieldFocused = true
                         }
                 }
             }
@@ -51,7 +50,7 @@ struct icon: View {
     @Binding var iconOffset: Bool
     @Binding var state: Bool
     @Binding var showTextFi: Bool
-
+    
     var body: some View {
         Button {
             if showTextFi {

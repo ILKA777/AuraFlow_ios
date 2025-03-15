@@ -13,7 +13,6 @@ struct OverlayView: View {
     
     var body: some View {
         ZStack {
-            // Semi-transparent background
             Color(uiColor: .CalliopeBlack()).opacity(0.4)
             
             VStack {
@@ -35,12 +34,12 @@ struct OverlayView: View {
             }
             .padding()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity) // Match parent view size
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .cornerRadius(20)
     }
 }
 
 #Preview {
     OverlayView(title: "Выполните вход в систему", isLocked: true)
-        .frame(width: 300, height: 100) // Example frame size for preview
+        .frame(width: 300, height: 100)
 }

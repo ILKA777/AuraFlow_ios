@@ -10,13 +10,12 @@ import SwiftUI
 struct PersonalisedСompilationView: View {
     @ObservedObject var viewModel: ResponseViewModel
     @StateObject private var playbackManager = PlaybackManager.shared
-    @State private var isNavigatingToMainView = false // Состояние для перехода на MainView
+    @State private var isNavigatingToMainView = false
     @State private var selectedTab: TabBarView.Tab = .main
     
     var body: some View {
         NavigationStack {
             VStack {
-                // HStack с заголовком и кнопкой закрытия
                 HStack {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Персональная")
@@ -32,7 +31,7 @@ struct PersonalisedСompilationView: View {
                             .multilineTextAlignment(.leading)
                             .fixedSize(horizontal: false, vertical: true)
                             .minimumScaleFactor(0.5)
-                            .offset(y: -10) // Настройка вертикального выравнивания
+                            .offset(y: -10)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.leading, 10)
@@ -40,7 +39,7 @@ struct PersonalisedСompilationView: View {
                     // Кнопка закрытия
                     Button(action: {
                         viewModel.removeLastResponse()
-                        isNavigatingToMainView = true // Переход на MainView при нажатии
+                        isNavigatingToMainView = true
                     }) {
                         Image(systemName: "xmark")
                             .foregroundColor(Color(uiColor: .CalliopeWhite()))
@@ -51,7 +50,6 @@ struct PersonalisedСompilationView: View {
                 .padding(.top, -20)
                 .padding(.trailing, 16)
                 
-                // ScrollView с медитациями
                 ScrollView {
                     VStack(spacing: 30) {
                         ForEach(sampleMeditations) { meditation in

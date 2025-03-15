@@ -14,11 +14,11 @@ struct MeditationPlayerViewForMiniPlayer: View {
     @StateObject private var playbackManager = PlaybackManager.shared
     @StateObject private var healthKitManager = HealthKitManager.shared
     @StateObject private var heartRateReceiver = HeartRateReceiver() // добавлено для получения пульса
-
+    
     let meditation: Meditation
     let album: MeditationAlbum
     @Environment(\.dismiss) private var dismiss
-
+    
     @State private var isVideoPlaying = false
     @State private var currentMediaType: MediaType = .audio
     @State private var isMediaPlaying: Bool = false
@@ -27,21 +27,21 @@ struct MeditationPlayerViewForMiniPlayer: View {
     @State private var isUserSeeking = false
     @State private var showTrackList = false
     @State private var currentMeditation: Meditation
-
+    
     @State private var areControlsVisible = true
-
+    
     @State private var scrollOffset: CGFloat = 0.0
     @State private var scrollingRight: Bool = true
     @State private var timer: Timer? = nil
-
-    // Новые состояния для пульса и итогового анализа
+    
+    // состояния для пульса и итогового анализа
     @State private var heartRateHistory: [Double] = []
     @State private var startHeartRate: Double = 0
     @State private var endHeartRate: Double = 0
     @State private var showSummary: Bool = false
     @State private var viewAppearTime: Date? = nil
     @State private var heartRateTimer: Timer? = nil
-
+    
     init(meditation: Meditation, album: MeditationAlbum) {
         self.meditation = meditation
         self.album = album
@@ -63,12 +63,12 @@ struct MeditationPlayerViewForMiniPlayer: View {
             }
         }
     }
-
+    
     func stopScrolling() {
         timer?.invalidate()
         timer = nil
     }
-
+    
     var body: some View {
         ZStack {
             if isVideoPlaying {

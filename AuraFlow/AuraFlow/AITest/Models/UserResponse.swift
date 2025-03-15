@@ -13,7 +13,7 @@ struct UserResponse: Identifiable {
     let answer: String
     
     init(question: String, answer: String) {
-        self.id = UUID() // Automatically generate a unique ID
+        self.id = UUID()
         self.question = question
         self.answer = answer
     }

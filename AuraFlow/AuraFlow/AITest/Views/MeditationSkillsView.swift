@@ -16,7 +16,6 @@ struct MeditationSkillsView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                // Title
                 VStack(spacing: 30) {
                     Text("У вас есть опыт")
                         .font(Font.custom("Montserrat-MediumItalic", size: 40))
@@ -37,7 +36,6 @@ struct MeditationSkillsView: View {
                         .offset(x: 10, y: -40)
                 }
                 .padding(.top, -20)
-                // Age options
                 VStack(spacing: 16) {
                     NavigationLink(destination: MeditationDurationView(viewModel: viewModel)) {
                         CustomButton(text: "Нет")
@@ -71,7 +69,6 @@ struct MeditationSkillsView: View {
                 
                 Spacer()
                 
-                // Back button
                 Button(action: {
                     viewModel.removeLastResponse()
                     dismiss()
