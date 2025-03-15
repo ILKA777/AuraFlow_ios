@@ -32,8 +32,10 @@ class StatisticService: ObservableObject {
     private let dateFormatter: DateFormatter = {
         let df = DateFormatter()
         df.dateFormat = "yyyy-MM-dd"
+        df.timeZone = .current // или установите нужный часовой пояс
         return df
     }()
+
     
     // Инициализация: загружаем сохранённые данные и устанавливаем таймер для проверки смены дня
     init() {

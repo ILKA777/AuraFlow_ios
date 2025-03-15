@@ -14,6 +14,7 @@ struct CreateMeditationView: View {
     @State private var selectedDuration = 5
     @State private var melodyPrompt = ""
     @State private var meditationPrompt = ""
+    @State private var audioPrompt = ""
     @State private var selectedVideo: VideoForGeneration? = nil
     
     let durations = [5, 10, 15, 20, 30, 45, 60]  // Available meditation durations
@@ -28,9 +29,20 @@ struct CreateMeditationView: View {
                 VStack(spacing: 20) {
                     // Title and Duration Controls
                     HStack {
-                        Text("Время медитации: \(Int(duration)) мин.")
-                            .foregroundColor(.white)
-                            .font(.system(size: 18)).bold()
+                        HStack {
+                            Text("Время медитации: ")
+                                .foregroundColor(.white)
+                                .font(.system(size: 18)).bold()
+                            
+                            Spacer()
+                            Text("\(Int(duration)) мин.")
+                                .foregroundColor(.white)
+                                .font(.system(size: 18)).bold()
+                                .padding(.trailing, 25)
+                        }
+                        .padding(.leading, 15)
+                        
+                        Spacer()
                         
                         Button(action: {
                             if duration > 0 {
@@ -44,7 +56,10 @@ struct CreateMeditationView: View {
                                 .background(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.white))
                         }
                         .contentShape(Rectangle())
+                        .offset(x: -15)
                         .padding(10)
+                        
+                        
                         
                         Button(action: {
                             if duration < 30 {
@@ -58,10 +73,12 @@ struct CreateMeditationView: View {
                                 .background(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.white))
                         }
                         .contentShape(Rectangle())
+                        .offset(x: -20)
                         .padding(10)
+                        
                     }
-                    .padding(.top, 30)
-                    .padding(.leading, -30)
+                    // .padding(.top, 30)
+                    
                     
                     // Melody Prompt Field
                     VStack(alignment: .leading) {
@@ -83,7 +100,7 @@ struct CreateMeditationView: View {
                         }
                     }
                     .padding(.horizontal)
-                    .padding(.top, 10)
+                    // .padding(.top, 10)
                     
                     // Meditation Prompt Field
                     VStack(alignment: .leading) {
@@ -99,6 +116,9 @@ struct CreateMeditationView: View {
                                     .padding(.top, -40)
                             }
                             TextEditor(text: $meditationPrompt)
+                                .onTapGesture {
+                                    hideKeyboard()
+                                }
                         }
                         .padding()
                         .background(RoundedRectangle(cornerRadius: 10).fill(Color.white))
@@ -111,7 +131,38 @@ struct CreateMeditationView: View {
                         )
                     }
                     .padding(.horizontal)
-                    .padding(.top, 10)
+                    .padding(.top, -10)
+                    
+                    VStack(alignment: .leading) {
+                        Text("Какую вы бы хотели мелодию ?")
+                            .foregroundColor(.white)
+                            .font(.system(size: 18)).bold()
+                        
+                        ZStack(alignment: .leading) {
+                            if audioPrompt.isEmpty {
+                                Text("Опишите, какой должна быть мелодия для вашей медитации.")
+                                    .bold()
+                                    .foregroundColor(Color(uiColor: .lightGray))
+                                    .padding(.top, -20)
+                            }
+                            TextEditor(text: $audioPrompt)
+                                .onTapGesture {
+                                    hideKeyboard()
+                                }
+                            
+                        }
+                        .padding()
+                        .background(RoundedRectangle(cornerRadius: 10).fill(Color.white))
+                        .scrollContentBackground(.hidden)
+                        .foregroundColor(.black)
+                        .frame(height: 80)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
+                    }
+                    .padding(.horizontal)
+                    //.padding(.top, 10)
                     
                     // Create Meditation Button
                     Button(action: {
@@ -130,11 +181,13 @@ struct CreateMeditationView: View {
                             .padding()
                             .background(RoundedRectangle(cornerRadius: 10).fill(Color.blue))
                     }
-                    .padding(.top, 20)
                     
                     Spacer()
+                    
                 }
-                .padding(.top, -40)
+                .onTapGesture {
+                    hideKeyboard()
+                }
                 .background(
                     Image("default")
                         .resizable()
@@ -159,11 +212,9 @@ struct CreateMeditationView: View {
                     isActive: $navigateToPlayer,
                     label: { EmptyView() }
                 )
-
                 
-                
-
             }
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("Создай свою медитацию")
@@ -172,6 +223,12 @@ struct CreateMeditationView: View {
                 }
             }
         }
+    }
+}
+
+extension CreateMeditationView {
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
 
@@ -192,12 +249,18 @@ struct CreatingMeditationPopupView: View {
     }
 }
 
+import SwiftUI
+import AVKit
+import Charts
+
 struct FullScreenMeditationVideoPlayerView: View {
     let videoURL: URL
-    @Environment(\.dismiss) private var dismiss
-    @State private var player = AVPlayer()
+    let audioURL = URL(string: "https://storage.googleapis.com/auraflow_bucket/audio/meditation_20250310_144922_1ae4b501.mp3")!
     
-    // Добавляем объекты для отслеживания пульса
+    @Environment(\.dismiss) private var dismiss
+    @State private var videoPlayer = AVPlayer()
+    @State private var audioPlayer = AVPlayer()
+    
     @StateObject private var healthKitManager = HealthKitManager.shared
     @StateObject private var playbackManager = PlaybackManager.shared
     
@@ -206,29 +269,23 @@ struct FullScreenMeditationVideoPlayerView: View {
     
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            VideoPlayer(player: player)
+            VideoPlayer(player: videoPlayer)
                 .ignoresSafeArea()
                 .onAppear {
-                    Task {  // Создаем асинхронную задачу
+                    Task {
                         if playbackManager.isPlaying {
                             await playbackManager.stopCurrent()
-                            
-                            // Создаём элемент плеера и запускаем видео
-                            let playerItem = AVPlayerItem(url: videoURL)
-                            player.replaceCurrentItem(with: playerItem)
-                            player.play()
-                        } else {
-                            // Создаём элемент плеера и запускаем видео
-                            let playerItem = AVPlayerItem(url: videoURL)
-                            player.replaceCurrentItem(with: playerItem)
-                            player.play()
                         }
+                        
+                        let videoItem = AVPlayerItem(url: videoURL)
+                        videoPlayer.replaceCurrentItem(with: videoItem)
+                        videoPlayer.play()
+                        
+                        let audioItem = AVPlayerItem(url: audioURL)
+                        audioPlayer.replaceCurrentItem(with: audioItem)
+                        audioPlayer.play()
                     }
                     
-                   
-                    
-                    
-                    // Обновляем историю пульса каждые 2 секунды
                     Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
                         let currentHR = heartRateReceiver.heartRate
                         heartRateHistory.append(currentHR)
@@ -238,12 +295,13 @@ struct FullScreenMeditationVideoPlayerView: View {
                     }
                 }
                 .onDisappear {
-                    player.pause()
-                    player.replaceCurrentItem(with: nil)
+                    videoPlayer.pause()
+                    videoPlayer.replaceCurrentItem(with: nil)
+                    
+                    audioPlayer.pause()
+                    audioPlayer.replaceCurrentItem(with: nil)
                 }
-
             
-            // Отображаем пульс и график, если включено в настройках HealthKitManager
             if healthKitManager.showPulseDuringVideo {
                 VStack {
                     HStack {
@@ -264,7 +322,7 @@ struct FullScreenMeditationVideoPlayerView: View {
                                 .shadow(radius: 5)
                             
                             Chart {
-                                ForEach(heartRateHistory.indices, id: \.self) { index in
+                                ForEach(heartRateHistory.indices, id: \..self) { index in
                                     LineMark(
                                         x: .value("Time", index),
                                         y: .value("Heart Rate", heartRateHistory[index])
@@ -310,9 +368,6 @@ struct FullScreenMeditationVideoPlayerView: View {
     }
 }
 
-#Preview {
-    FullScreenMeditationVideoPlayerView(videoURL: URL(string: "https://example.com/video.mp4")!)
-}
 
 
 #Preview {

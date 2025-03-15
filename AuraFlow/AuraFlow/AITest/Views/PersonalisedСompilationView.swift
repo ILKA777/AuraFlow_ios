@@ -66,17 +66,17 @@ struct PersonalisedСompilationView: View {
                 Spacer()
                 
                 // Кнопка возврата на главную
-                NavigationLink(destination: MainView(selectedTab: $selectedTab), isActive: $isNavigatingToMainView) {
-                    Text("На главную")
-                        .font(Font.custom("Montserrat-Regular", size: 18))
-                        .foregroundColor(Color(uiColor: .CalliopeWhite()))
-                        .padding(.bottom, UIScreen.main.bounds.height == 667 ? 20 : 0)
-                }
-                .simultaneousGesture(TapGesture().onEnded {
-                    viewModel.removeLastResponse()
-                    isNavigatingToMainView = true
-                })
-                .padding(.bottom, -20)
+//                NavigationLink(destination: MainView(selectedTab: $selectedTab), isActive: $isNavigatingToMainView) {
+//                    Text("На главную")
+//                        .font(Font.custom("Montserrat-Regular", size: 18))
+//                        .foregroundColor(Color(uiColor: .CalliopeWhite()))
+//                        .padding(.bottom, UIScreen.main.bounds.height == 667 ? 20 : 0)
+//                }
+//                .simultaneousGesture(TapGesture().onEnded {
+//                    viewModel.removeLastResponse()
+//                    isNavigatingToMainView = true
+//                })
+//                .padding(.bottom, -20)
             }
             .padding()
             .background(
