@@ -8,6 +8,7 @@
 import AVKit
 import Combine
 
+
 class PlaybackManager: ObservableObject {
     static let shared = PlaybackManager()
     
@@ -26,6 +27,8 @@ class PlaybackManager: ObservableObject {
     
     private var timeObserverToken: Any?
     private var playerItemObserver: NSKeyValueObservation?
+    private var kinescopeTimeObserver: Timer?
+
     
     var currentTimeString: String {
         let currentSeconds = Int(currentTime)
@@ -89,7 +92,6 @@ class PlaybackManager: ObservableObject {
         setupPlayerTimeObserver()
         observeCurrentItem()
     }
-    
     func playAlbum(from album: MeditationAlbum, startingAt meditation: Meditation) async {
         await stopCurrent()
         

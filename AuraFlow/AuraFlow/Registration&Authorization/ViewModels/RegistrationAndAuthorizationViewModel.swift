@@ -18,7 +18,6 @@ final class RegistrationAndAuthorizationViewModel: ObservableObject {
     @Published var username: String = ""
     @Published var email: String = ""
     @Published var password: String = ""
-    
     // Режимы экрана
     @Published var isLoginMode: Bool = false
     @Published var isVerificationMode: Bool = false
@@ -37,52 +36,65 @@ final class RegistrationAndAuthorizationViewModel: ObservableObject {
     
     func loginUser(completion: @escaping (Bool) -> Void) {
         guard let url = URL(string: networkServiceUrl + "auth/signin") else {
-            DispatchQueue.main.async { self.alertMessage?.message = "Некорректный URL." }
+            DispatchQueue.main.async {
+                self.alertMessage = AlertItem(message: "Некорректный URL.")
+            }
             completion(false)
             return
         }
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         let parameters: [String: Any] = ["email": email, "password": password]
         request.httpBody = try? JSONSerialization.data(withJSONObject: parameters)
-        
+
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
-                DispatchQueue.main.async { self.alertMessage?.message = error.localizedDescription }
+                DispatchQueue.main.async {
+                    self.alertMessage = AlertItem(message: error.localizedDescription)
+                }
                 completion(false)
                 return
             }
-            
+
             guard let httpResponse = response as? HTTPURLResponse, let data = data else {
-                DispatchQueue.main.async { self.alertMessage?.message = "Некорректный ответ сервера." }
+                DispatchQueue.main.async {
+                    self.alertMessage = AlertItem(message: "Некорректный ответ сервера.")
+                }
                 completion(false)
                 return
             }
-            
+
             if httpResponse.statusCode == 200 {
                 if let token = String(data: data, encoding: .utf8) {
                     self.saveToken(token)
                     self.fetchUserData(token: token) { success in
+                        print("токен авторизации \(token)")
                         completion(success)
                     }
                 } else {
-                    DispatchQueue.main.async { self.alertMessage?.message = "Не удалось извлечь токен." }
+                    DispatchQueue.main.async {
+                        self.alertMessage = AlertItem(message: "Не удалось извлечь токен.")
+                    }
                     completion(false)
                 }
             } else {
                 if let errorMessage = self.parseErrorMessage(data: data) {
-                    DispatchQueue.main.async { self.alertMessage?.message = errorMessage }
+                    DispatchQueue.main.async {
+                        self.alertMessage = AlertItem(message: errorMessage)
+                    }
                 } else {
-                    DispatchQueue.main.async { self.alertMessage?.message = "Неизвестная ошибка." }
+                    DispatchQueue.main.async {
+                        self.alertMessage = AlertItem(message: "Неизвестная ошибка.")
+                    }
                 }
                 completion(false)
             }
         }.resume()
     }
-    
+
     func registerUser(completion: @escaping (Bool) -> Void) {
         guard let url = URL(string: networkServiceUrl + "auth/signup") else {
             completion(false)
@@ -105,13 +117,20 @@ final class RegistrationAndAuthorizationViewModel: ObservableObject {
                 self.saveToken(token)
                 // Сохраняем пользователя в CoreData
                 CoreDataManager.shared.saveUser(name: self.username, email: self.email)
-                DispatchQueue.main.async { completion(true) }
+                DispatchQueue.main.async {
+                    // Обновляем данные пользователя сразу после регистрации
+                    self.fetchUserData(token: token) { success in
+                        
+                        completion(success)
+                    }
+                }
             } else {
                 DispatchQueue.main.async { self.alertMessage?.message = "Ошибка регистрации" }
                 completion(false)
             }
         }.resume()
     }
+
     
     func sendConfirmationCode(completion: @escaping (String?) -> Void) {
         guard let url = URL(string: networkServiceUrl + "email/send-code") else {

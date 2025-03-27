@@ -52,6 +52,9 @@ struct ProfileView: View {
                             .cornerRadius(20)
                             .padding(.horizontal)
                             .padding(.top, 20)
+                            .onDisappear {
+                                viewModel.fetchUserData()
+                            }
                         } else {
                             if let user = viewModel.user {
                                 UserInfoCellView(user: user)
@@ -61,8 +64,33 @@ struct ProfileView: View {
                         }
                     }
                     ZStack {
-                        NavigationLink(destination: StatisticView()) {
+                        
+                        
+                        if !isUserLoggedIn {
                             StatisticsCellView()
+                                .blur(radius: 3)
+                            
+                            
+                            HStack {
+                                Image(systemName: "lock.fill")
+                                    .font(Font.custom("Montserrat-Semibold", size: 22))
+                                    .foregroundColor(Color(uiColor: .CalliopeBlack()))
+                                    .offset(x: 15)
+                                
+                                
+                                Text("Статистика недоступна")
+                                    .font(Font.custom("Montserrat-Regular", size: 20))
+                                    .foregroundColor(Color(uiColor: .CalliopeBlack()))
+                                    .padding()
+                            }
+                            .cornerRadius(10)
+                            .frame(maxWidth: UIScreen.main.bounds.width - 30, maxHeight: .infinity)
+                            .background(Color(uiColor: .CalliopeWhite()).opacity(0.7))
+                            .cornerRadius(20)
+                        } else {
+                            NavigationLink(destination: StatisticView()) {
+                                StatisticsCellView()
+                            }
                         }
                     }
                     VStack(spacing: 20) {
@@ -194,6 +222,11 @@ struct ProfileView: View {
             .onAppear {
                 playbackManager.isMiniPlayerVisible = false
                 viewModel.fetchUserData()
+                if let user = viewModel.user {
+                    UserInfoCellView(user: user)
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+                }
                 viewModel.requestHealthKitAccess(healthKitManager: healthKitManager) { _ in }
             }
             .onDisappear {

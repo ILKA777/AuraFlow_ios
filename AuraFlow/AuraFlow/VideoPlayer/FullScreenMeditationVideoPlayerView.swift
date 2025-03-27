@@ -11,21 +11,26 @@ import Charts
 
 struct FullScreenMeditationVideoPlayerView: View {
     let videoURL: URL
-    let audioURL = URL(string: "https://storage.googleapis.com/auraflow_bucket/audio/meditation_20250310_144922_1ae4b501.mp3")!
-    
+    let audioURL = URL(string: "https://storage.yandexcloud.net/auraflow/audio/meditation_20250324_161951_8b9a11d4.mp3")!
+    let durationInMinutes: Int // Длительность медитации, которая была выбрана пользователем
+
     @Environment(\.dismiss) private var dismiss
     @State private var videoPlayer = AVPlayer()
     @State private var audioPlayer = AVPlayer()
-    
+
     @StateObject private var healthKitManager = HealthKitManager.shared
     @StateObject private var playbackManager = PlaybackManager.shared
-    
+
     @StateObject private var heartRateReceiver = HeartRateReceiver()
     @State private var heartRateHistory: [Double] = []
-    
+
+    @State private var isPlaying = false // Состояние воспроизведения
+    @State private var showControls = true // Показывать ли элементы управления
+    @State private var timer: Timer? // Таймер для скрытия элементов управления
+
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            VideoPlayer(player: videoPlayer)
+            CustomVideoPlayer(player: videoPlayer)
                 .ignoresSafeArea()
                 .onAppear {
                     Task {
@@ -33,23 +38,48 @@ struct FullScreenMeditationVideoPlayerView: View {
                             await playbackManager.stopCurrent()
                         }
                         
-                        let videoItem = AVPlayerItem(url: videoURL)
-                        videoPlayer.replaceCurrentItem(with: videoItem)
-                        videoPlayer.play()
+                        // Создаем композицию для видео
+                        let composition = AVMutableComposition()
+
+                        let videoAsset = AVAsset(url: videoURL)
+                        let videoTrack = composition.addMutableTrack(
+                            withMediaType: .video,
+                            preferredTrackID: kCMPersistentTrackID_Invalid
+                        )
                         
-                        let audioItem = AVPlayerItem(url: audioURL)
-                        audioPlayer.replaceCurrentItem(with: audioItem)
-                        audioPlayer.play()
-                    }
-                    
-                    Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
-                        let currentHR = heartRateReceiver.heartRate
-                        heartRateHistory.append(currentHR)
-                        if heartRateHistory.count > 20 {
-                            heartRateHistory.removeFirst()
+                        do {
+                            // Получаем исходный трек видео
+                            let videoAssetTrack = videoAsset.tracks(withMediaType: .video).first!
+                            let videoDuration = videoAsset.duration
+                            
+                            var totalDuration: CMTime = .zero
+                            let desiredDuration = CMTime(seconds: Double(durationInMinutes * 60), preferredTimescale: 600)
+                            
+                            // Вставляем видео несколько раз, чтобы достичь необходимой длительности
+                            while totalDuration < desiredDuration {
+                                let remainingDuration = desiredDuration - totalDuration
+                                let timeRange = CMTimeRangeMake(start: .zero, duration: min(remainingDuration, videoDuration))
+                                
+                                try videoTrack?.insertTimeRange(timeRange, of: videoAssetTrack, at: totalDuration)
+                                totalDuration = totalDuration + min(remainingDuration, videoDuration)
+                            }
+                            
+                            // Настройка плеера для видео
+                            let playerItem = AVPlayerItem(asset: composition)
+                            videoPlayer.replaceCurrentItem(with: playerItem)
+
+                            // Настройка аудио
+                            let audioItem = AVPlayerItem(url: audioURL)
+                            audioPlayer.replaceCurrentItem(with: audioItem)
+
+                            togglePlayback()
+                        } catch {
+                            print("Error in creating video composition: \(error.localizedDescription)")
                         }
                     }
+                    
                 }
+
                 .onDisappear {
                     videoPlayer.pause()
                     videoPlayer.replaceCurrentItem(with: nil)
@@ -57,7 +87,7 @@ struct FullScreenMeditationVideoPlayerView: View {
                     audioPlayer.pause()
                     audioPlayer.replaceCurrentItem(with: nil)
                 }
-            
+
             if healthKitManager.showPulseDuringVideo {
                 VStack {
                     HStack {
@@ -78,7 +108,7 @@ struct FullScreenMeditationVideoPlayerView: View {
                                 .shadow(radius: 5)
                             
                             Chart {
-                                ForEach(heartRateHistory.indices, id: \..self) { index in
+                                ForEach(heartRateHistory.indices, id: \.self) { index in
                                     LineMark(
                                         x: .value("Time", index),
                                         y: .value("Heart Rate", heartRateHistory[index])
@@ -107,6 +137,42 @@ struct FullScreenMeditationVideoPlayerView: View {
                     Spacer()
                 }
             }
+
+            // Управление воспроизведением
+            VStack {
+                Spacer()
+                HStack {
+                    Button(action: togglePlayback) {
+                        Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                            .font(.largeTitle)
+                            .foregroundColor(.white)
+                            .padding()
+                    }
+
+                    Button(action: rewind) {
+                        Image(systemName: "gobackward.15")
+                            .font(.title)
+                            .foregroundColor(.white)
+                            .padding()
+                    }
+
+                    Button(action: forward) {
+                        Image(systemName: "goforward.15")
+                            .font(.title)
+                            .foregroundColor(.white)
+                            .padding()
+                    }
+                }
+                .padding(.bottom, 40)
+            }
+            .opacity(showControls ? 1 : 0) // Управление видимостью
+        }
+        .onTapGesture {
+            // Переключение состояния показа/скрытия управления
+            withAnimation {
+                showControls.toggle()
+            }
+            resetTimer() // Перезапуск таймера
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
@@ -122,10 +188,77 @@ struct FullScreenMeditationVideoPlayerView: View {
             }
         }
     }
+    
+    // Функция для переключения play/pause
+    private func togglePlayback() {
+        if isPlaying {
+            videoPlayer.pause()
+            audioPlayer.pause()
+        } else {
+            videoPlayer.play()
+            audioPlayer.play()
+        }
+        isPlaying.toggle()
+    }
+    
+    // Функция для перемотки назад
+    private func rewind() {
+        let currentTime = videoPlayer.currentTime()
+        let rewindTime = CMTime(seconds: 15, preferredTimescale: currentTime.timescale)
+        let newTime = max(currentTime - rewindTime, .zero)
+        videoPlayer.seek(to: newTime)
+        audioPlayer.seek(to: newTime)
+    }
+    
+    // Функция для перемотки вперед
+    private func forward() {
+        let currentTime = videoPlayer.currentTime()
+        let forwardTime = CMTime(seconds: 15, preferredTimescale: currentTime.timescale)
+        let newTime = currentTime + forwardTime
+        videoPlayer.seek(to: newTime)
+        audioPlayer.seek(to: newTime)
+    }
+    
+    // Сброс таймера для скрытия управления
+    private func resetTimer() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { _ in
+            withAnimation {
+                showControls = false
+            }
+        }
+    }
 }
 
-
-
 #Preview {
-    CreateMeditationView()
+    let seaVideoURL = Bundle.main.url(forResource: "seaMeditation", withExtension: "mp4")?.absoluteString ?? ""
+    if let url = URL(string: seaVideoURL) {
+        FullScreenMeditationVideoPlayerView(videoURL: url, durationInMinutes: 5)
+    }
+}
+// Создание кастомного видео плеера
+struct CustomVideoPlayer: View {
+    let player: AVPlayer
+
+    var body: some View {
+        VideoPlayer(player: player)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .overlay(AVPlayerControllerRepresentable(player: player))
+    }
+}
+
+// Представление AVPlayer для интеграции с SwiftUI
+struct AVPlayerControllerRepresentable: UIViewControllerRepresentable {
+    let player: AVPlayer
+
+    func makeUIViewController(context: Context) -> AVPlayerViewController {
+        let playerViewController = AVPlayerViewController()
+        playerViewController.player = player
+        playerViewController.showsPlaybackControls = false // Скрываем стандартные элементы управления
+        return playerViewController
+    }
+
+    func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
+        // Можно обновить плеер, если потребуется
+    }
 }

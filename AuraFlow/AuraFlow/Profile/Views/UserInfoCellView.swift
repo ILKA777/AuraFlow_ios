@@ -12,7 +12,8 @@ struct UserInfoCellView: View {
     let user: User
     @AppStorage("isUserLoggedIn") private var isUserLoggedIn = false
     @Environment(\.managedObjectContext) private var viewContext
-
+    @StateObject private var viewModel = RegistrationAndAuthorizationViewModel()
+    
     var body: some View {
         HStack(spacing: 16) {
             // Profile Image
@@ -58,24 +59,35 @@ struct UserInfoCellView: View {
     
     // Logout function that clears Core Data and logs the user out
     private func logoutUser() {
+        // Очистить все данные пользователя из Core Data
         clearUserData()
+
+        // Установить флаг, что пользователь не вошел
         isUserLoggedIn = false
+
+        // При выходе из аккаунта нужно гарантировать, что вьюшки ссылаются на правильные данные
+       // viewModel.user = nil
+
         print("User logged out successfully.")
     }
     
     // Clear user data from Core Data
+    // В функции clearUserData()
     private func clearUserData() {
+        let context = CoreDataManager.shared.persistentContainer.viewContext
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "UserCoreData")
         let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
         
         do {
-            try viewContext.execute(batchDeleteRequest)
-            try viewContext.save()
+            try context.execute(batchDeleteRequest)
+            try context.save()  // Сохраняем изменения в контексте после удаления
             print("User data cleared from Core Data.")
         } catch {
             print("Failed to clear user data: \(error.localizedDescription)")
         }
     }
+
+
 }
 
 #Preview {

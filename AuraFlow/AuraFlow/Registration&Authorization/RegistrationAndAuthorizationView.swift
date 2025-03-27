@@ -15,7 +15,7 @@ struct RegistrationAndAuthorizationView: View {
     @StateObject private var viewModel = RegistrationAndAuthorizationViewModel()
     @State private var keyboardHeight: CGFloat = 0
     @FocusState private var focusedField: Int?
-    
+    @MainActor
     var body: some View {
         NavigationStack {
             ZStack {
@@ -44,7 +44,6 @@ struct RegistrationAndAuthorizationView: View {
                     
                     Spacer()
                     
-                    // Основная кнопка действия
                     Button(action: {
                         if viewModel.isLoginMode {
                             viewModel.loginUser { success in
@@ -67,6 +66,11 @@ struct RegistrationAndAuthorizationView: View {
                                 }
                             } else {
                                 print("Verification code does not match.")
+                                
+                                DispatchQueue.main.async {
+                                    self.viewModel.alertMessage?.message = "Код подтверждения не совпадает."
+                                }
+
                             }
                         } else {
                             if viewModel.validateEmail(viewModel.email) {
@@ -76,6 +80,10 @@ struct RegistrationAndAuthorizationView: View {
                                             print("Успешно получили код: \(code)")
                                         } else {
                                             print("Ошибка при отправке кода подтверждения.")
+                                           // viewModel.alertMessage?.message = "Ошибка при отправке кода."
+                                            DispatchQueue.main.async {
+                                                self.viewModel.alertMessage = AlertItem(message: "Ошибка при отправке кода.")
+                                            }
                                         }
                                     }
                                 } else {
@@ -83,6 +91,10 @@ struct RegistrationAndAuthorizationView: View {
                                 }
                             } else {
                                 print("Некорректный email.")
+                                //viewModel.alertMessage?.message = "Некорректный email."
+                                DispatchQueue.main.async {
+                                    self.viewModel.alertMessage = AlertItem(message: "Некорректный email.")
+                                }
                             }
                         }
                     }) {
@@ -99,6 +111,10 @@ struct RegistrationAndAuthorizationView: View {
                             )
                     }
                     .frame(maxWidth: UIScreen.main.bounds.width - 32)
+
+                    // Alert отображается, если в viewModel есть ошибка
+                    
+
                     
                     // Переключение режима
                     Text(viewModel.isLoginMode ? "У меня нет аккаунта" : "У меня уже есть аккаунт")
@@ -139,6 +155,13 @@ struct RegistrationAndAuthorizationView: View {
                     }
                 }
             }
+            .alert(item: $viewModel.alertMessage) { alertItem in
+                Alert(
+                    title: Text("Ошибка"),
+                    message: Text(alertItem.message),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
             .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
                 if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
                     withAnimation {
@@ -150,14 +173,6 @@ struct RegistrationAndAuthorizationView: View {
                 withAnimation {
                     keyboardHeight = 0
                 }
-            }
-            // Пример отображения Alert через связывание с viewModel.alertMessage
-            .alert(item: $viewModel.alertMessage) { alertItem in
-                Alert(
-                    title: Text("Ошибка"),
-                    message: Text(alertItem.message),
-                    dismissButton: .default(Text("OK"))
-                )
             }
 
         }
