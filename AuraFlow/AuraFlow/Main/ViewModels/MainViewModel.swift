@@ -12,6 +12,7 @@ final class MainViewModel: ObservableObject {
     @Published var keyboardHeight: CGFloat = 0
     @Published var shouldShowBreathingPractice: Bool = false
     @Published var navigationPath = NavigationPath()
+    @Published var isLoading: Bool = true // Loading state
     @Published var meditations: [Meditation] = []
     
     // Вычисляемые свойства для фильтрации
@@ -53,9 +54,13 @@ final class MainViewModel: ObservableObject {
     }
     
     // Загрузка медитаций с сети
-    func loadMeditations() {
-        NetworkService.shared.fetchMeditations { [weak self] meditations in
-            self?.meditations = meditations
+        func loadMeditations() {
+            isLoading = true // Start loading
+            
+            // Simulate fetching data from the network (replace with actual network call)
+            NetworkService.shared.fetchMeditations { [weak self] meditations in
+                self?.meditations = meditations
+                self?.isLoading = false // Stop loading
+            }
         }
-    }
 }

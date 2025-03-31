@@ -134,6 +134,9 @@ final class RegistrationAndAuthorizationViewModel: ObservableObject {
     
     func sendConfirmationCode(completion: @escaping (String?) -> Void) {
         guard let url = URL(string: networkServiceUrl + "email/send-code") else {
+            DispatchQueue.main.async {
+                self.alertMessage = AlertItem(message: "Некорректный URL.")
+            }
             completion(nil)
             return
         }
@@ -156,13 +159,17 @@ final class RegistrationAndAuthorizationViewModel: ObservableObject {
                 }
                 completion(code)
             } else {
+                DispatchQueue.main.async {
+                    self.alertMessage = AlertItem(message: "Ошибка при отправке кода.")
+                }
                 completion(nil)
             }
         }.resume()
     }
+
     
     private func saveToken(_ token: String) {
-        UserDefaults.standard.set(token, forKey: "authToken")
+        KeychainService.shared.save(token: token)
     }
     
     func fetchUserData(token: String, completion: @escaping (Bool) -> Void) {
@@ -228,10 +235,16 @@ final class RegistrationAndAuthorizationViewModel: ObservableObject {
     }
     
     // MARK: - Работа с кодом подтверждения
-    
     func checkVerificationCode() -> Bool {
-        return verificationCode.joined() == serverVerificationCode
+        let isCodeMatch = verificationCode.joined() == serverVerificationCode
+        if !isCodeMatch {
+            DispatchQueue.main.async {
+                self.alertMessage = AlertItem(message: "Вы ввели неверный код подтверждения.")
+            }
+        }
+        return isCodeMatch
     }
+
     
     func isCodeComplete() -> Bool {
         return verificationCode.allSatisfy { $0.count == 1 }
@@ -243,5 +256,12 @@ final class RegistrationAndAuthorizationViewModel: ObservableObject {
         } else {
             focusedField = nil
         }
+    }
+}
+// Добавляем метод проверки формата пароля в ViewModel
+extension RegistrationAndAuthorizationViewModel {
+    func isPasswordValidFormat(_ password: String) -> Bool {
+        let regex = "^[A-Za-z0-9@$!%*?&]+$"
+        return NSPredicate(format: "SELF MATCHES %@", regex).evaluate(with: password)
     }
 }

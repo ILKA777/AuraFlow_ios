@@ -39,7 +39,7 @@ struct Meditation: Identifiable, Equatable, Hashable {
             .replacingOccurrences(of: "час", with: "", options: .regularExpression)
             .replacingOccurrences(of: "часов", with: "", options: .regularExpression)
             .replacingOccurrences(of: "[[:punct:]]", with: "", options: .regularExpression) // Убираем знаки препинания
-            .replacingOccurrences(of: "  ", with: " ", options: .regularExpression) // Убираем знаки препинания
+            .replacingOccurrences(of: "  ", with: "", options: .regularExpression) // Убираем знаки препинания
         
         self.author = author ?? "Сервис"
         self.date = date

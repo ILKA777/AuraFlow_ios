@@ -16,8 +16,12 @@ class NetworkService {
     var url: String = "https://auraflow-main1-0eeb7f198893.herokuapp.com/"
     
     // Функция для получения токена из хранилища (например, UserDefaults)
-    private func getAuthToken() -> String? {
-        return "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJtb3Jpbi5pbHlhMjAxNkB5YW5kZXgucnUiLCJpYXQiOjE3NDMwODQ4MTYsImV4cCI6MTc0MzE3MTIxNn0.qU9P1jzj4bI3BZZif8j_15hiDXdFBEJh9hMa8pdpVnXi0VtNwrdACMSEWJcsDBbpFPtlXSwcCKehPozMmoA9PA" // Замените на свой способ получения токена
+    public func getAuthToken() -> String? {
+        guard let token = KeychainService.shared.retrieve() else {
+            print("Token not found.")
+            return ""
+        }
+        return token
     }
     
     func fetchMeditations(completion: @escaping ([Meditation]) -> Void) {

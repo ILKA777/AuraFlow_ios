@@ -16,8 +16,8 @@ struct ProfileView: View {
     @StateObject private var viewModel: ProfileViewModel
     
     init() {
-        let token = UserDefaults.standard.string(forKey: "authToken") ?? ""
-        _viewModel = StateObject(wrappedValue: ProfileViewModel(authToken: token))
+        let token = NetworkService.shared.getAuthToken()
+        _viewModel = StateObject(wrappedValue: ProfileViewModel(authToken: token ?? ""))
     }
     
     var body: some View {

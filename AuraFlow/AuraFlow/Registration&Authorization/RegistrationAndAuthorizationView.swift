@@ -75,23 +75,27 @@ struct RegistrationAndAuthorizationView: View {
                         } else {
                             if viewModel.validateEmail(viewModel.email) {
                                 if viewModel.validatePassword(viewModel.password) {
-                                    viewModel.sendConfirmationCode { code in
-                                        if let code = code {
-                                            print("Успешно получили код: \(code)")
-                                        } else {
-                                            print("Ошибка при отправке кода подтверждения.")
-                                           // viewModel.alertMessage?.message = "Ошибка при отправке кода."
-                                            DispatchQueue.main.async {
-                                                self.viewModel.alertMessage = AlertItem(message: "Ошибка при отправке кода.")
+                                    if viewModel.isPasswordValidFormat(viewModel.password) {
+                                        viewModel.sendConfirmationCode { code in
+                                            if let code = code {
+                                                print("Успешно получили код: \(code)")
+                                            } else {
+                                                DispatchQueue.main.async {
+                                                    self.viewModel.alertMessage = AlertItem(message: "Ошибка при отправке кода.")
+                                                }
                                             }
+                                        }
+                                    } else {
+                                        DispatchQueue.main.async {
+                                            self.viewModel.alertMessage = AlertItem(message: "Пароль должен содержать только латинские буквы, цифры и специальные символы @$!%*?&")
                                         }
                                     }
                                 } else {
-                                    viewModel.alertMessage?.message = "Пароль должен состоять из 8 символов и должен содержать хотя бы 1 заглавную, 1 прописную латинскую букву, 1 цифру и один спец символ из списка \"@$!%*?&\""
+                                    DispatchQueue.main.async {
+                                        self.viewModel.alertMessage = AlertItem(message: "Пароль должен состоять из 8 символов и должен содержать хотя бы 1 заглавную, 1 прописную латинскую букву, 1 цифру и один спец символ из списка \"@$!%*?&\"")
+                                    }
                                 }
                             } else {
-                                print("Некорректный email.")
-                                //viewModel.alertMessage?.message = "Некорректный email."
                                 DispatchQueue.main.async {
                                     self.viewModel.alertMessage = AlertItem(message: "Некорректный email.")
                                 }

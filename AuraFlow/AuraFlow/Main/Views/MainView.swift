@@ -130,6 +130,8 @@ struct MainView: View {
                                 }
                                 
                                 if viewModel.searchText.isEmpty && !isInputActive {
+                                    
+                                    
                                     ScrollView(showsIndicators: false) {
                                         VStack {
                                             HStack {
@@ -174,13 +176,20 @@ struct MainView: View {
                                             .padding(.horizontal)
                                             .padding(.top, 20)
                                             
-                                            VStack(spacing: 40) {
-                                                ForEach(viewModel.meditations) { meditation in
-                                                    MeditationView(meditation: meditation)
+                             
+                                                
+                                                VStack(spacing: 40) {
+                                                    ForEach(viewModel.meditations) { meditation in
+                                                        if viewModel.isLoading {
+                                                            MeditationViewPlaceholder()
+                                                        } else {
+                                                            MeditationView(meditation: meditation)
+                                                        }
+                                                    }
                                                 }
-                                            }
-                                            .padding(.top, 10)
-                                            .padding(.bottom, playbackManager.isMiniPlayerVisible ? 220 : 100)
+                                                .padding(.top, 10)
+                                                .padding(.bottom, playbackManager.isMiniPlayerVisible ? 220 : 100)
+                                            
                                         }
                                     }
                                     .padding(.top, -20)

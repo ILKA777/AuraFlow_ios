@@ -107,3 +107,80 @@ struct MeditationView: View {
 #Preview {
     MeditationView(meditation: sampleMeditations[0])
 }
+
+import SwiftUI
+
+struct MeditationViewPlaceholder: View {
+    @State private var isLoading = true
+    
+    var body: some View {
+        ZStack {
+            // Background for placeholder view
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.gray.opacity(0.3))
+                .shadow(radius: 5)
+            
+            VStack(alignment: .leading, spacing: 10) {
+                // Placeholder Title
+                HStack {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.gray.opacity(0.6))
+                        .frame(width: 200, height: 20)
+                }
+                
+                // Placeholder Author
+                Text("От Автор")
+                    .font(Font.custom("Montserrat-Regular", size: 14))
+                    .foregroundColor(Color.gray.opacity(0.7))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                HStack {
+                    // Placeholder Tags
+                    HStack(spacing: 5) {
+                        ForEach(0..<3, id: \.self) { _ in
+                            RoundedRectangle(cornerRadius: 17)
+                                .fill(Color.gray.opacity(0.6))
+                                .frame(width: 60, height: 30)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    Spacer()
+                    
+                    // Placeholder Button (Loading state)
+                    ZStack {
+                        Circle()
+                            .fill(Color.gray.opacity(0.6))
+                            .frame(width: 48, height: 48)
+                        
+                        // Loading animation with rotating circle
+                        Image(systemName: "circle.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(Color.white)
+                            .rotationEffect(.degrees(isLoading ? 360 : 0))
+                            .animation(
+                                .linear(duration: 1)
+                                .repeatForever(autoreverses: false),
+                                value: isLoading
+                            )
+                    }
+                }
+            }
+            .padding()
+        }
+        .frame(height: 120)
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal)
+        .onAppear {
+            // Simulate data loading by toggling the loading state after a delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                isLoading = false
+            }
+        }
+    }
+}
+
+#Preview {
+    MeditationViewPlaceholder()
+}
