@@ -14,6 +14,8 @@ struct ProfileView: View {
     @AppStorage("isUserLoggedIn") private var isUserLoggedIn = false
     @AppStorage("authToken") private var authToken: String = ""
     @StateObject private var viewModel: ProfileViewModel
+    @State private var isAboutUsAlertPresented = false
+    @Environment(\.openURL) private var openURL
     
     init() {
         let token = NetworkService.shared.getAuthToken()
@@ -180,7 +182,7 @@ struct ProfileView: View {
                     // Footer
                     VStack(alignment: .leading, spacing: 10) {
                         Button(action: {
-                            print("О нас tapped")
+                            isAboutUsAlertPresented = true
                         }) {
                             Text("О нас")
                                 .font(Font.custom("Montserrat-Regular", size: 20))
@@ -190,9 +192,11 @@ struct ProfileView: View {
                         }
                         
                         Button(action: {
-                            print("Восстановить покупки tapped")
+                            if let mailURL = URL(string: "mailto:auraflowapp@yandex.ru") {
+                                                            openURL(mailURL)
+                                                        }
                         }) {
-                            Text("Восстановить покупки")
+                            Text("Поддержка")
                                 .font(Font.custom("Montserrat-Regular", size: 20))
                                 .foregroundColor(Color(uiColor: .CalliopeWhite()))
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -201,6 +205,12 @@ struct ProfileView: View {
                     }
                     .padding(.leading, 20)
                     .padding(.bottom, 20)
+                    .alert("AuraFlow", isPresented: $isAboutUsAlertPresented) {
+                        Button("Круто !", role: .cancel) {}
+                    } message: {
+                        Text("Мы молодая команда из НИУ ВШЭ, которая хочет создать инновационный продукт в мире онлай медитаций, чтобы облегчить жизнь своим пользователям и помочь им бороться со стрессом и усталостью! Надеемся на Вашу поддержку!")
+                    }
+                    
                 }
                 .padding(.top)
             }
@@ -217,6 +227,21 @@ struct ProfileView: View {
                     Text("Профиль")
                         .font(Font.custom("Montserrat-Semibold", size: 20))
                         .foregroundColor(Color(uiColor: .CalliopeWhite()))
+                }
+            }
+            .onChange(of: isUserLoggedIn) { loggedIn in
+                /**
+                 После регистрации RegistrationView выставляет isUserLoggedIn = true.
+                 Это событие ловим здесь, чтобы мгновенно подтянуть актуальные данные
+                 пользователя из бэкенда и обновить карточку профиля без перезагрузки экрана.
+                 */
+                if loggedIn {
+                    viewModel.fetchUserData()
+                    if let user = viewModel.user {
+                        UserInfoCellView(user: user)
+                            .padding(.horizontal)
+                            .padding(.top, 20)
+                    }
                 }
             }
             .onAppear {

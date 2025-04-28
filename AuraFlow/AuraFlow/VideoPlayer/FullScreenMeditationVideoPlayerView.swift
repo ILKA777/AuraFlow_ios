@@ -11,23 +11,25 @@ import Charts
 
 struct FullScreenMeditationVideoPlayerView: View {
     let videoURL: URL
-    let audioURL = URL(string: "https://storage.yandexcloud.net/auraflow/audio/meditation_20250324_161951_8b9a11d4.mp3")!
+    let audioURL : URL
     let durationInMinutes: Int // Длительность медитации, которая была выбрана пользователем
-
+    let meditationId: String
+    
     @Environment(\.dismiss) private var dismiss
     @State private var videoPlayer = AVPlayer()
     @State private var audioPlayer = AVPlayer()
-
+    
     @StateObject private var healthKitManager = HealthKitManager.shared
     @StateObject private var playbackManager = PlaybackManager.shared
-
+    
     @StateObject private var heartRateReceiver = HeartRateReceiver()
     @State private var heartRateHistory: [Double] = []
-
+    
     @State private var isPlaying = false // Состояние воспроизведения
     @State private var showControls = true // Показывать ли элементы управления
     @State private var timer: Timer? // Таймер для скрытия элементов управления
-
+    @State private var showSaveAlert = false
+    
     var body: some View {
         ZStack(alignment: .topTrailing) {
             CustomVideoPlayer(player: videoPlayer)
@@ -40,7 +42,7 @@ struct FullScreenMeditationVideoPlayerView: View {
                         
                         // Создаем композицию для видео
                         let composition = AVMutableComposition()
-
+                        
                         let videoAsset = AVAsset(url: videoURL)
                         let videoTrack = composition.addMutableTrack(
                             withMediaType: .video,
@@ -67,11 +69,11 @@ struct FullScreenMeditationVideoPlayerView: View {
                             // Настройка плеера для видео
                             let playerItem = AVPlayerItem(asset: composition)
                             videoPlayer.replaceCurrentItem(with: playerItem)
-
+                            
                             // Настройка аудио
                             let audioItem = AVPlayerItem(url: audioURL)
                             audioPlayer.replaceCurrentItem(with: audioItem)
-
+                            
                             togglePlayback()
                         } catch {
                             print("Error in creating video composition: \(error.localizedDescription)")
@@ -79,7 +81,7 @@ struct FullScreenMeditationVideoPlayerView: View {
                     }
                     
                 }
-
+            
                 .onDisappear {
                     videoPlayer.pause()
                     videoPlayer.replaceCurrentItem(with: nil)
@@ -87,7 +89,7 @@ struct FullScreenMeditationVideoPlayerView: View {
                     audioPlayer.pause()
                     audioPlayer.replaceCurrentItem(with: nil)
                 }
-
+            
             if healthKitManager.showPulseDuringVideo {
                 VStack {
                     HStack {
@@ -137,7 +139,7 @@ struct FullScreenMeditationVideoPlayerView: View {
                     Spacer()
                 }
             }
-
+            
             // Управление воспроизведением
             VStack {
                 Spacer()
@@ -148,14 +150,14 @@ struct FullScreenMeditationVideoPlayerView: View {
                             .foregroundColor(.white)
                             .padding()
                     }
-
+                    
                     Button(action: rewind) {
                         Image(systemName: "gobackward.15")
                             .font(.title)
                             .foregroundColor(.white)
                             .padding()
                     }
-
+                    
                     Button(action: forward) {
                         Image(systemName: "goforward.15")
                             .font(.title)
@@ -179,15 +181,43 @@ struct FullScreenMeditationVideoPlayerView: View {
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: {
-                    dismiss()
-                }) {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(Color(uiColor: .CalliopeWhite()))
+                Button(action: { showSaveAlert = true }) {
+                    Image(systemName: "chevron.left").foregroundColor(Color(uiColor: .CalliopeWhite()))
                 }
             }
         }
+        .alert("Хотите сохранить созданную медитацию ?", isPresented: $showSaveAlert) {
+            Button("Да") {
+                saveMeditation()
+            }
+            Button("Нет", role: .cancel) {
+                dismiss()
+            }
+        }
     }
+    
+    private func saveMeditation() {
+           guard let url = URL(string: NetworkService.shared.url + "user-meditations/add") else {
+               dismiss(); return
+           }
+           var request = URLRequest(url: url)
+           request.httpMethod = "POST"
+           request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+           if let token = NetworkService.shared.getAuthToken(), !token.isEmpty {
+               request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+           }
+           let body: [String: Any] = [
+               "videoUrl": audioURL.absoluteString
+           ]
+        print("айди \(meditationId)")
+        print("videoUrl \(audioURL.absoluteString)")
+           request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+           URLSession.shared.dataTask(with: request) { _, _, _ in
+               DispatchQueue.main.async { dismiss() }
+           }.resume()
+       }
+
+    
     
     // Функция для переключения play/pause
     private func togglePlayback() {
@@ -230,16 +260,16 @@ struct FullScreenMeditationVideoPlayerView: View {
     }
 }
 
-#Preview {
-    let seaVideoURL = Bundle.main.url(forResource: "seaMeditation", withExtension: "mp4")?.absoluteString ?? ""
-    if let url = URL(string: seaVideoURL) {
-        FullScreenMeditationVideoPlayerView(videoURL: url, durationInMinutes: 5)
-    }
-}
+//#Preview {
+//    let seaVideoURL = Bundle.main.url(forResource: "seaMeditation", withExtension: "mp4")?.absoluteString ?? ""
+//    if let url = URL(string: seaVideoURL) {
+//        FullScreenMeditationVideoPlayerView(videoURL: url, audioURL: <#URL#>, durationInMinutes: 5)
+//    }
+//}
 // Создание кастомного видео плеера
 struct CustomVideoPlayer: View {
     let player: AVPlayer
-
+    
     var body: some View {
         VideoPlayer(player: player)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -250,14 +280,14 @@ struct CustomVideoPlayer: View {
 // Представление AVPlayer для интеграции с SwiftUI
 struct AVPlayerControllerRepresentable: UIViewControllerRepresentable {
     let player: AVPlayer
-
+    
     func makeUIViewController(context: Context) -> AVPlayerViewController {
         let playerViewController = AVPlayerViewController()
         playerViewController.player = player
         playerViewController.showsPlaybackControls = false // Скрываем стандартные элементы управления
         return playerViewController
     }
-
+    
     func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
         // Можно обновить плеер, если потребуется
     }

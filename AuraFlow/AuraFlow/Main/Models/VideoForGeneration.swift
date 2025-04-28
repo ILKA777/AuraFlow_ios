@@ -42,7 +42,7 @@ let videosForGeneration = [
     VideoForGeneration(
         title: "Небо",
         videoLink: skyVideoURL,
-        imageLink: "https://ecopolitic.com.ua/wp-content/uploads/2021/04/shutterstock_616333076.jpg"
+        imageLink: "https://s6.stc.all.kpcdn.net/edu/wp-content/uploads/2024/11/pochemu-nebo-goluboe.jpg"
     ),
     
     VideoForGeneration(

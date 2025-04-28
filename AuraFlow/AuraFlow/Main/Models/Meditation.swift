@@ -35,6 +35,7 @@ struct Meditation: Identifiable, Equatable, Hashable {
             // Убираем все цифры, знаки препинания, а также слова "минут", "минуты", "час", "часов"
             .replacingOccurrences(of: "[0-9]", with: "", options: .regularExpression)
             .replacingOccurrences(of: "минуты", with: "", options: .regularExpression)
+            .replacingOccurrences(of: "mp", with: "", options: .regularExpression)
             .replacingOccurrences(of: "минут", with: "", options: .regularExpression)
             .replacingOccurrences(of: "час", with: "", options: .regularExpression)
             .replacingOccurrences(of: "часов", with: "", options: .regularExpression)
@@ -46,7 +47,7 @@ struct Meditation: Identifiable, Equatable, Hashable {
         self.duration = duration
         self.videoLink = videoLink
         self.image = UIImage(named: "meditation1") ?? UIImage(systemName: "sunrise.fill")!
-        self.tags = ["Тестовый тег", "Медитация", "AuraFlow"]
+        self.tags = ["Релакс", "Медитация", "AuraFlow"]
     }
 
 }

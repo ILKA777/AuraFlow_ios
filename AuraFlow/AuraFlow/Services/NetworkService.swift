@@ -11,6 +11,26 @@ import SwiftUI
 class NetworkService {
     static let shared = NetworkService()
     
+    // MARK: – Network‑side API‑модели (JSON)
+
+    private struct MeditationAPIModel: Decodable {
+        let id: String
+        let author: String?
+        let title: String
+        let description: String?
+        let videoLink: String
+        let tags: [String]
+        let createdAt: String
+    }
+
+    private struct AlbumAPIModel: Decodable {
+        let id: String
+        let title: String
+        let description: String?
+        let meditations: [MeditationAPIModel]
+    }
+    
+    
     private init() {}
     
     var url: String = "https://auraflow-main1-0eeb7f198893.herokuapp.com/"
@@ -24,6 +44,16 @@ class NetworkService {
         return token
     }
     
+    /// Возвращает true, если для текущего токена есть активная подписка
+       func hasSubscription() -> Bool {
+           guard let token = getAuthToken(), !token.isEmpty else {
+               return false
+           }
+           let key = "subscription_\(token)"
+           return UserDefaults.standard.bool(forKey: key)
+       }
+    
+    
     func fetchMeditations(completion: @escaping ([Meditation]) -> Void) {
         let urlString = "\(url)meditation/all"
         guard let url = URL(string: urlString) else { return }
@@ -32,9 +62,10 @@ class NetworkService {
         request.httpMethod = "GET"
         
         // Добавляем заголовок с токеном авторизации
-        if let token = getAuthToken() {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
+        if let token = getAuthToken(), !token.isEmpty {
+                   request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+               }
+
         
         URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {
@@ -49,7 +80,7 @@ class NetworkService {
                         title: meditation.title,
                         author: meditation.author,
                         date: meditation.createdAt,
-                        duration: "X минут", // Временно добавляем 0 мин
+                        duration: "5 минут", // Временно добавляем 0 мин
                         videoLink: meditation.videoLink,
                         image: UIImage(named: "meditation1")!,
                         tags: meditation.tags
@@ -63,6 +94,53 @@ class NetworkService {
             }
         }.resume()
     }
+    
+    // MARK: – Albums
+        func fetchAlbums(completion: @escaping ([MeditationAlbum]) -> Void) {
+            let urlString = "\(url)platform-meditation-album/all"
+            guard let url = URL(string: urlString) else { return }
+
+            var request = URLRequest(url: url)
+            request.httpMethod = "GET"
+            if let token = getAuthToken(), !token.isEmpty {
+                       request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                   }
+
+
+            URLSession.shared.dataTask(with: request) { data, _, error in
+                guard let data = data, error == nil else {
+                    print("Error fetching albums: \(String(describing: error))")
+                    return
+                }
+                do {
+                    let apiAlbums = try JSONDecoder().decode([AlbumAPIModel].self, from: data)
+                    let albums: [MeditationAlbum] = apiAlbums.map { album in
+                        // Преобразуем медитации внутри альбома
+                        let tracks: [Meditation] = album.meditations.map { med in
+                            Meditation(
+                                title: med.title,
+                                author: med.author,
+                                date: med.createdAt,
+                                duration: "5 минут", // TODO: duration from backend
+                                videoLink: med.videoLink,
+                                image: UIImage(named: "meditation1") ?? UIImage(),
+                                tags: med.tags
+                            )
+                        }
+                        return MeditationAlbum(
+                            title: album.title,
+                            author: tracks.first?.author ?? "Unknown",
+                            tracks: tracks,
+                            status: "Доступен"
+                        )
+                    }
+                    DispatchQueue.main.async { completion(albums) }
+                } catch {
+                    print("Decoding albums failed: \(error)")
+                }
+            }.resume()
+        }
+    
 }
 
 // Модель, получаемая с API

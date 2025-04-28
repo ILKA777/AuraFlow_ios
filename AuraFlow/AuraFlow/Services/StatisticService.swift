@@ -9,7 +9,7 @@ import SwiftUI
 
 // MARK: - Менеджер статистики с сохранением данных в UserDefaults
 class StatisticService: ObservableObject {
-    static let shared = StatisticService()
+    static var shared = StatisticService()
     
     // Целевое количество минут занятий в день
     @Published var targetMinutes: Double = 15 {

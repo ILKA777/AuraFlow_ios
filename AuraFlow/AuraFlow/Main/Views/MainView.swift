@@ -153,8 +153,14 @@ struct MainView: View {
                                             
                                             ScrollView(.horizontal, showsIndicators: false) {
                                                 HStack(spacing: -10) {
-                                                    ForEach(sampleAlbums) { album in
-                                                        MeditationAlbumView(album: album, width: UIScreen.main.bounds.width * 0.51, height: 210, navigationPath: $viewModel.navigationPath)
+                                                    
+                                                    if viewModel.isAlbumsLoading {
+                                                        ForEach(0..<6) { _ in MeditationAlbumViewPlaceholder(width: UIScreen.main.bounds.width * 0.51, height: 210) }
+                                                        
+                                                    } else {
+                                                        ForEach(viewModel.albums) { album in
+                                                            MeditationAlbumView(album: album, width: UIScreen.main.bounds.width * 0.51, height: 210, navigationPath: $viewModel.navigationPath)
+                                                        }
                                                     }
                                                 }
                                             }
@@ -176,20 +182,22 @@ struct MainView: View {
                                             .padding(.horizontal)
                                             .padding(.top, 20)
                                             
-                             
-                                                
+                                            
+                                            if viewModel.isMeditationsLoading {
+                                                VStack(spacing: 40) {
+                                                    ForEach(0..<6) { _ in MeditationViewPlaceholder() }
+                                                }
+                                                .padding(.top, 10)
+                                                .padding(.bottom, playbackManager.isMiniPlayerVisible ? 220 : 100)
+                                            } else {
                                                 VStack(spacing: 40) {
                                                     ForEach(viewModel.meditations) { meditation in
-                                                        if viewModel.isLoading {
-                                                            MeditationViewPlaceholder()
-                                                        } else {
-                                                            MeditationView(meditation: meditation)
-                                                        }
+                                                        MeditationView(meditation: meditation)
                                                     }
                                                 }
                                                 .padding(.top, 10)
                                                 .padding(.bottom, playbackManager.isMiniPlayerVisible ? 220 : 100)
-                                            
+                                            }
                                         }
                                     }
                                     .padding(.top, -20)
@@ -267,6 +275,7 @@ struct MainView: View {
             }
         }
         .onAppear {
+            viewModel.loadAlbums()
             viewModel.loadMeditations()
             viewModel.shouldShowBreathingPractice = UserDefaults.standard.bool(forKey: "launchWithBreathingPractice")
         }

@@ -23,7 +23,7 @@ class PlaybackManager: ObservableObject {
     @Published var currentTime: Double = 0.0
     @Published var duration: Double = 1.0
     
-    private var playSessionStart: Date? = nil
+    var playSessionStart: Date? = nil
     
     private var timeObserverToken: Any?
     private var playerItemObserver: NSKeyValueObservation?
@@ -49,7 +49,19 @@ class PlaybackManager: ObservableObject {
             self?.currentTime = 0.0
         }
         
-        let items = album.tracks.map { AVPlayerItem(url: URL(string: $0.videoLink)!) }
+        let items = album.tracks.compactMap { track -> AVPlayerItem? in
+            // percent-encode ссылки, чтобы пробелы и спецсимволы стали %20, %2F и т.д.
+            guard
+                let encodedString = track.videoLink
+                    .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                let url = URL(string: encodedString)
+            else {
+                print("❌ Некорректный URL:", track.videoLink)
+                return nil
+            }
+            return AVPlayerItem(url: url)
+        }
+
         
         DispatchQueue.main.async { [weak self] in
             self?.queuePlayer = AVQueuePlayer(items: items)
@@ -169,16 +181,26 @@ class PlaybackManager: ObservableObject {
     }
     
     func observeCurrentItem() {
-        playerItemObserver = queuePlayer?.observe(\.currentItem, options: [.new, .initial]) { [weak self] _, change in
-            if let currentItem = change.newValue as? AVPlayerItem,
-               let urlAsset = currentItem.asset as? AVURLAsset {
-                DispatchQueue.main.async {
-                    self?.currentMeditation = self?.currentAlbum?.tracks.first(where: { $0.videoLink == urlAsset.url.absoluteString })
-                }
+        playerItemObserver = queuePlayer?
+          .observe(\.currentItem, options: [.new, .initial]) { [weak self] _, change in
+            guard
+              let self = self,
+              let currentItem = change.newValue as? AVPlayerItem,
+              let urlAsset = currentItem.asset as? AVURLAsset
+            else { return }
+
+            // Де-запроцентовываем абсолютную строку
+            let rawURL = urlAsset.url.absoluteString.removingPercentEncoding
+                         ?? urlAsset.url.absoluteString
+
+            DispatchQueue.main.async {
+              self.currentMeditation = self.currentAlbum?
+                .tracks
+                .first { $0.videoLink == rawURL }
             }
         }
     }
-    
+
     func skipToNextTrack() {
         queuePlayer?.advanceToNextItem()
     }

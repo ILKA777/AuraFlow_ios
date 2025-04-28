@@ -12,15 +12,17 @@ final class MainViewModel: ObservableObject {
     @Published var keyboardHeight: CGFloat = 0
     @Published var shouldShowBreathingPractice: Bool = false
     @Published var navigationPath = NavigationPath()
-    @Published var isLoading: Bool = true // Loading state
+    @Published var isMeditationsLoading = true // Loading state
+    @Published var isAlbumsLoading = true
     @Published var meditations: [Meditation] = []
+    @Published var albums: [MeditationAlbum] = []
     
     // Вычисляемые свойства для фильтрации
     var filteredAlbums: [MeditationAlbum] {
         if searchText.isEmpty {
             return []
         } else {
-            return sampleAlbums.filter { album in
+            return albums.filter { album in
                 album.title.lowercased().contains(searchText.lowercased()) ||
                 album.author.lowercased().contains(searchText.lowercased())
             }
@@ -37,7 +39,7 @@ final class MainViewModel: ObservableObject {
             }
         }
     }
-
+    
     // Методы для обработки событий клавиатуры
     func updateKeyboardHeight(_ notification: Notification) {
         if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
@@ -54,13 +56,21 @@ final class MainViewModel: ObservableObject {
     }
     
     // Загрузка медитаций с сети
-        func loadMeditations() {
-            isLoading = true // Start loading
-            
-            // Simulate fetching data from the network (replace with actual network call)
-            NetworkService.shared.fetchMeditations { [weak self] meditations in
-                self?.meditations = meditations
-                self?.isLoading = false // Stop loading
-            }
+    func loadMeditations() {
+        isMeditationsLoading = true // Start loading
+        
+        // Simulate fetching data from the network (replace with actual network call)
+        NetworkService.shared.fetchMeditations { [weak self] meditations in
+            self?.meditations = meditations
+            self?.isMeditationsLoading = false // Stop loading
         }
+    }
+    
+    func loadAlbums() {
+        isAlbumsLoading = true
+        NetworkService.shared.fetchAlbums { [weak self] albums in
+            self?.albums = albums
+            self?.isAlbumsLoading = false
+        }
+    }
 }

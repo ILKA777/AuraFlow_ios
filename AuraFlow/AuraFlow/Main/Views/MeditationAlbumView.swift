@@ -101,3 +101,64 @@ struct MeditationAlbumView: View {
         }
     }
 }
+
+struct MeditationAlbumViewPlaceholder: View {
+    @State private var isAnimating = false
+
+    let width: CGFloat
+    let height: CGFloat
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 32)
+                .fill(Color.gray.opacity(0.3))
+
+            VStack(alignment: .leading, spacing: 10) {
+                // Заголовок альбома
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.gray.opacity(0.6))
+                    .frame(width: width * 0.7, height: 24)
+
+                // Автор
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Color.gray.opacity(0.5))
+                    .frame(width: width * 0.4, height: 18)
+
+                Spacer()
+
+                HStack {
+                    // Чип c количеством треков
+                    RoundedRectangle(cornerRadius: 17)
+                        .fill(Color.gray.opacity(0.6))
+                        .frame(width: 90, height: 30)
+
+                    Spacer()
+
+                    // Кнопка play/pause
+                    ZStack {
+                        Circle()
+                            .fill(Color.gray.opacity(0.6))
+                            .frame(width: 48, height: 48)
+
+                        Image(systemName: "circle.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .foregroundColor(.white)
+                            .rotationEffect(.degrees(isAnimating ? 360 : 0))
+                            .animation(
+                                .linear(duration: 1)
+                                    .repeatForever(autoreverses: false),
+                                value: isAnimating
+                            )
+                    }
+                }
+                .offset(y: -10)
+            }
+            .padding()
+        }
+        .frame(width: width, height: height)
+        .padding(.horizontal)
+        .onAppear { isAnimating = true }
+    }
+}

@@ -34,11 +34,9 @@ struct MeditationView: View {
                         .background(playbackManager.isPlaying && isPlayingThisMeditation ? Color.gray.opacity(0.3) : Color.gray.opacity(0.3))
                         .cornerRadius(17)
                 }
-                    Text("От \(meditation.author)")
-                        .font(Font.custom("Montserrat-Regular", size: 14))
-                        .foregroundColor(playbackManager.isPlaying && isPlayingThisMeditation ? Color(uiColor: .CalliopeBlack()).opacity(0.7) : Color(uiColor: .CalliopeWhite()).opacity(0.7))
-               
-                
+                Text("От \(meditation.author)")
+                    .font(Font.custom("Montserrat-Regular", size: 14))
+                    .foregroundColor(playbackManager.isPlaying && isPlayingThisMeditation ? Color(uiColor: .CalliopeBlack()).opacity(0.7) : Color(uiColor: .CalliopeWhite()).opacity(0.7))
                 
                 HStack {
                     HStack(spacing: 5) {
@@ -73,7 +71,7 @@ struct MeditationView: View {
                                     author: meditation.author,
                                     tracks: [meditation], status: "Завершен"
                                 )
-                               await playbackManager.playAlbum(album: album)
+                                await playbackManager.playAlbum(album: album)
                             }
                         }
                     }) {
@@ -173,7 +171,7 @@ struct MeditationViewPlaceholder: View {
         .frame(maxWidth: .infinity)
         .padding(.horizontal)
         .onAppear {
-            // Simulate data loading by toggling the loading state after a delay
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 isLoading = false
             }

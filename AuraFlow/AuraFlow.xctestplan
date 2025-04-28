@@ -1,0 +1,29 @@
+{
+  "configurations" : [
+    {
+      "id" : "B901BEC2-4083-4C10-9082-654FBE5B7DB2",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:AuraFlow.xcodeproj",
+      "identifier" : "0444E18E2D1D709A00FAF9D1",
+      "name" : "AuraFlow"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:AuraFlow.xcodeproj",
+        "identifier" : "047678072DBB84FF00BA307D",
+        "name" : "AuraFlowTests"
+      }
+    }
+  ],
+  "version" : 1
+}

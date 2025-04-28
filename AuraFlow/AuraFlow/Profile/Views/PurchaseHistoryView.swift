@@ -10,6 +10,9 @@ import SwiftUI
 struct PurchaseHistoryView: View {
     
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL    // Added for support email
+    @State private var isRestoreAlertPresented = false  // Added for restore alert
+    
     let purchases: [Purchase] = [
         Purchase(name: "Подписка", date: "сегодня", amount: "-399 ₽"),
         Purchase(name: "Пакет Природа", date: "23.02", amount: "-199 ₽")
@@ -44,7 +47,9 @@ struct PurchaseHistoryView: View {
             
             VStack(alignment: .leading, spacing: 10) {
                 Button(action: {
-                    print("Поддержка tapped")
+                    if let mailURL = URL(string: "mailto:auraflowapp@yandex.ru") {
+                        openURL(mailURL)
+                    }
                 }) {
                     Text("Поддержка")
                         .font(.system(size: 20))
@@ -55,7 +60,7 @@ struct PurchaseHistoryView: View {
                 .padding(.bottom, -25)
                 
                 Button(action: {
-                    print("Восстановить покупки tapped")
+                    isRestoreAlertPresented = true
                 }) {
                     Text("Восстановить покупки")
                         .font(.system(size: 20))
@@ -92,6 +97,11 @@ struct PurchaseHistoryView: View {
                         .foregroundColor(Color(uiColor: .CalliopeWhite()))
                 }
             }
+        }
+        .alert("Внимание!", isPresented: $isRestoreAlertPresented) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Для восстановления покупок необходимо обратиться в поддержку по адресу auraflowapp@yandex.ru")
         }
     }
 }

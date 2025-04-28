@@ -69,10 +69,12 @@ final class RegistrationAndAuthorizationViewModel: ObservableObject {
 
             if httpResponse.statusCode == 200 {
                 if let token = String(data: data, encoding: .utf8) {
-                    self.saveToken(token)
-                    self.fetchUserData(token: token) { success in
-                        print("токен авторизации \(token)")
-                        completion(success)
+                    DispatchQueue.main.async {
+                        self.saveToken(token)
+                        self.fetchUserData(token: token) { success in
+                            print("токен авторизации \(token)")
+                            completion(success)
+                        }
                     }
                 } else {
                     DispatchQueue.main.async {
@@ -95,6 +97,18 @@ final class RegistrationAndAuthorizationViewModel: ObservableObject {
         }.resume()
     }
 
+    
+    private func findProfileViewModel() -> ProfileViewModel? {
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootVC = scene.windows.first?.rootViewController else {
+            return nil
+        }
+        
+        // Реализуйте поиск ProfileViewModel в вашей навигационной структуре
+        // Это может быть через EnvironmentObject или другие механизмы
+        return nil
+    }
+    
     func registerUser(completion: @escaping (Bool) -> Void) {
         guard let url = URL(string: networkServiceUrl + "auth/signup") else {
             completion(false)

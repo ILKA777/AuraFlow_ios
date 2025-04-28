@@ -17,6 +17,14 @@ struct CreateMeditationView: View {
         NavigationStack {
             ZStack {
                 VStack(spacing: 20) {
+                    
+                    // Новое: счетчик попыток
+                    Text("Попыток генерации: \(viewModel.remainingAttempts) из \(viewModel.totalAttempts)")
+                        .foregroundColor(.white)
+                        .font(.system(size: 18)).bold()
+                        .offset( y: 10)
+                        .padding(.horizontal)
+                    
                     // Заголовок и управление длительностью
                     HStack {
                         HStack {
@@ -104,7 +112,7 @@ struct CreateMeditationView: View {
                         .background(RoundedRectangle(cornerRadius: 10).fill(Color.white))
                         .scrollContentBackground(.hidden)
                         .foregroundColor(.black)
-                        .frame(height: 130)
+                        .frame(height: 120)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
                                 .stroke(Color.gray, lineWidth: 1)
@@ -135,7 +143,7 @@ struct CreateMeditationView: View {
                         .background(RoundedRectangle(cornerRadius: 10).fill(Color.white))
                         .scrollContentBackground(.hidden)
                         .foregroundColor(.black)
-                        .frame(height: 80)
+                        .frame(height: 70)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
                                 .stroke(Color.gray, lineWidth: 1)
@@ -176,17 +184,30 @@ struct CreateMeditationView: View {
                 NavigationLink(
                     destination: Group {
                         if let selectedVideo = viewModel.selectedVideo,
-                           let url = URL(string: selectedVideo.videoLink) {
-                            FullScreenMeditationVideoPlayerView(videoURL: url, durationInMinutes: Int(viewModel.duration))
+                           let videoURL = URL(string: selectedVideo.videoLink),
+                           let audioURL = viewModel.generatedAudioURL,
+                           let meditationId = viewModel.meditationId {
+                            FullScreenMeditationVideoPlayerView(
+                                videoURL: videoURL,
+                                audioURL: audioURL,
+                                durationInMinutes: Int(viewModel.duration),
+                                meditationId: meditationId
+                            )
                         } else {
-                            Text("Видео не выбрано")
+                            Text("Ожидание генерации...")
                         }
                     },
                     isActive: $viewModel.navigateToPlayer,
                     label: { EmptyView() }
                 )
+                
+                if viewModel.showPopup {
+                    CreatingMeditationPopupView()
+                }
             }
-            .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                  viewModel.refreshLimits()
+                }            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("Создай свою медитацию")
@@ -196,6 +217,11 @@ struct CreateMeditationView: View {
             }
         }
     }
+
+}
+
+#Preview {
+    CreateMeditationView()
 }
 
 extension CreateMeditationView {
