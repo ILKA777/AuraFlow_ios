@@ -18,7 +18,7 @@ struct MeditationAlbumView: View {
     @Binding var navigationPath: NavigationPath
     
     var body: some View {
-        NavigationLink(destination: MeditationListView(album: album, navigationPath: $navigationPath)) {
+        NavigationLink(destination: MeditationListView(album: album, navigationPath: $navigationPath, subscriptionRequired: true)) {
             ZStack {
                 RoundedRectangle(cornerRadius: 32)
                     .fill(isPlaying ? Color(uiColor: .AuraFlowBlue()) : Color.gray.opacity(0.3))

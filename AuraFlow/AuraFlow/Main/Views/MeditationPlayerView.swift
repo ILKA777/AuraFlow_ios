@@ -43,11 +43,12 @@ struct MeditationPlayerView: View {
     // Новое состояние для отслеживания времени входа
     @State private var viewAppearTime: Date? = nil
     
+    
     init(meditation: Meditation, album: MeditationAlbum) {
-        self.meditation = meditation
-        self.album = album
-        _currentMeditation = State(initialValue: meditation)
-    }
+            self.meditation = meditation
+            self.album = album
+            _currentMeditation = State(initialValue: meditation)
+        }
     
     var body: some View {
         ZStack {
@@ -291,6 +292,17 @@ struct MeditationPlayerView: View {
                                     .frame(width: 24, height: 24)
                                     .foregroundColor(.white)
                             }
+                            
+                            Button(action: {
+                                FavoritesManager.shared.toggle(currentMeditation)
+                            }) {
+                                Image(systemName: FavoritesManager.shared.isFavorite(currentMeditation) ? "heart.fill" : "heart")
+                                    .resizable()
+                                    .frame(width: 24, height: 24)
+                                    .foregroundColor(FavoritesManager.shared.isFavorite(currentMeditation) ? .red : .white)
+                            }
+
+                            
                         }
                         .padding(.bottom, 30)
                     }

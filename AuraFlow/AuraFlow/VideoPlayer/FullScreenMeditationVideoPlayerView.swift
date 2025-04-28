@@ -29,12 +29,38 @@ struct FullScreenMeditationVideoPlayerView: View {
     @State private var showControls = true // Показывать ли элементы управления
     @State private var timer: Timer? // Таймер для скрытия элементов управления
     @State private var showSaveAlert = false
+    @State private var newMeditationName = ""
+    
+    @State private var startHeartRate: Double = 0
+    @State private var endHeartRate: Double = 0
+    @State private var showSummary: Bool = false
+    
+    // Новое состояние для отслеживания времени входа
+    @State private var viewAppearTime: Date? = nil
+    
     
     var body: some View {
         ZStack(alignment: .topTrailing) {
             CustomVideoPlayer(player: videoPlayer)
                 .ignoresSafeArea()
                 .onAppear {
+                    
+                    viewAppearTime = Date()  // Записываем время входа на экран
+                    playbackManager.isMiniPlayerVisible = false
+                    // Сохраняем начальное значение пульса при запуске медитации
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                        startHeartRate = heartRateReceiver.heartRate
+                    }
+                 
+                    // Обновляем историю пульса каждые 2 секунды
+                    Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
+                        let heartRate = heartRateReceiver.heartRate
+                        heartRateHistory.append(heartRate)
+                        if heartRateHistory.count > 20 {
+                            heartRateHistory.removeFirst()
+                        }
+                    }
+                    
                     Task {
                         if playbackManager.isPlaying {
                             await playbackManager.stopCurrent()
@@ -127,7 +153,7 @@ struct FullScreenMeditationVideoPlayerView: View {
                             .chartYAxis {
                                 AxisMarks(position: .leading, values: .automatic)
                             }
-                            .chartXScale(domain: 0...max(Double(heartRateHistory.count) + 30, 30))
+                            .chartXScale(domain: 0...heartRateHistory.count + 30)
                             .frame(width: 150, height: 100)
                             .padding(.horizontal, 10)
                             .background(Color.black.opacity(0.6))
@@ -186,38 +212,103 @@ struct FullScreenMeditationVideoPlayerView: View {
                 }
             }
         }
-        .alert("Хотите сохранить созданную медитацию ?", isPresented: $showSaveAlert) {
-            Button("Да") {
-                saveMeditation()
-            }
-            Button("Нет", role: .cancel) {
-                dismiss()
-            }
+//        .alert("Хотите сохранить созданную медитацию ?", isPresented: $showSaveAlert) {
+//            Button("Да") {
+//                saveMeditation()
+//            }
+//            Button("Нет", role: .cancel) {
+//                dismiss()
+//            }
+//        }
+        
+        .sheet(isPresented: $showSummary, onDismiss: {
+            dismiss()
+        }) {
+            MeditationSummaryView(startHeartRate: startHeartRate, endHeartRate: endHeartRate, heartRateHistory: heartRateHistory)
         }
+        
+        .alert("Хотите сохранить медитацию ?", isPresented: $showSaveAlert) {
+                            TextField("Имя медитации", text: $newMeditationName)
+                            Button("Сохранить") {
+                                saveMeditation(name: newMeditationName)
+                                // теперь уже переходим к плееру
+                                //viewModel.navigateToPlayer = true
+                                
+                                if let appearTime = viewAppearTime,
+                                   Date().timeIntervalSince(appearTime) > 60, healthKitManager.showPulseAnalyticsAfterExit {
+                                    finishMeditation()
+                                } else {
+                                    dismiss()
+                                }
+                                
+                                
+                                
+                            }
+                            Button("Отмена", role: .cancel) {
+                                // просто идём дальше без сохранения
+                               // dismiss()
+                                if let appearTime = viewAppearTime,
+                                   Date().timeIntervalSince(appearTime) > 60, healthKitManager.showPulseAnalyticsAfterExit {
+                                    finishMeditation()
+                                } else {
+                                    dismiss()
+                                }
+                            }
+                        } message: {
+                            Text("Введите название для вашей медитации")
+                        }
+        
     }
     
-    private func saveMeditation() {
-           guard let url = URL(string: NetworkService.shared.url + "user-meditations/add") else {
-               dismiss(); return
-           }
-           var request = URLRequest(url: url)
-           request.httpMethod = "POST"
-           request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-           if let token = NetworkService.shared.getAuthToken(), !token.isEmpty {
-               request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-           }
-           let body: [String: Any] = [
-               "videoUrl": audioURL.absoluteString
-           ]
-        print("айди \(meditationId)")
-        print("videoUrl \(audioURL.absoluteString)")
-           request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-           URLSession.shared.dataTask(with: request) { _, _, _ in
-               DispatchQueue.main.async { dismiss() }
-           }.resume()
-       }
-
+//    private func saveMeditation() {
+//           guard let url = URL(string: NetworkService.shared.url + "user-meditations/add") else {
+//               dismiss(); return
+//           }
+//           var request = URLRequest(url: url)
+//           request.httpMethod = "POST"
+//           request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+//           if let token = NetworkService.shared.getAuthToken(), !token.isEmpty {
+//               request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+//           }
+//           let body: [String: Any] = [
+//               "videoUrl": audioURL.absoluteString
+//           ]
+//        print("айди \(meditationId)")
+//        print("videoUrl \(audioURL.absoluteString)")
+//           request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+//           URLSession.shared.dataTask(with: request) { _, _, _ in
+//               DispatchQueue.main.async { dismiss() }
+//           }.resume()
+//       }
     
+    func saveMeditation(name: String) {
+            
+            
+            // тело POST
+            let body: [String: Any] = [
+                //"id": meditationId,
+                "videoUrl": audioURL.absoluteString,
+                //"name": name
+            ]
+            var request = URLRequest(url: URL(string: "\(NetworkService.shared.url)user-meditations/add")!)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            if let token = NetworkService.shared.getAuthToken() {
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            }
+            request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+            URLSession.shared.dataTask(with: request).resume()
+            
+            // локально
+        let gm = GeneratedMeditation(
+            id: meditationId,
+            videoUrl: audioURL.absoluteString,
+            name: name
+        )
+        GeneratedMeditationsManager.shared.add(gm)
+        }
+    
+
     
     // Функция для переключения play/pause
     private func togglePlayback() {
@@ -257,6 +348,11 @@ struct FullScreenMeditationVideoPlayerView: View {
                 showControls = false
             }
         }
+    }
+    
+    private func finishMeditation() {
+        endHeartRate = heartRateReceiver.heartRate
+        showSummary = true
     }
 }
 

@@ -102,9 +102,9 @@ struct MeditationView: View {
     }
 }
 
-#Preview {
-    MeditationView(meditation: sampleMeditations[0])
-}
+//#Preview {
+//   // MeditationView(meditation: sampleMeditations[0])
+//}
 
 import SwiftUI
 

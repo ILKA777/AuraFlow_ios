@@ -59,17 +59,24 @@ struct UserInfoCellView: View {
     
     // Logout function that clears Core Data and logs the user out
     private func logoutUser() {
-        // Очистить все данные пользователя из Core Data
+        // 1) Remove the token from the Keychain
+        KeychainService.shared.delete()  // or whatever your API for removing the token is
+
+        // 2) Clear Core Data (your existing code)
         clearUserData()
 
-        // Установить флаг, что пользователь не вошел
+        // 3) Reset login state
         isUserLoggedIn = false
 
-        // При выходе из аккаунта нужно гарантировать, что вьюшки ссылаются на правильные данные
-       // viewModel.user = nil
+        // 4) Clear in-memory and on-disk favorites
+        FavoritesManager.shared.clearAll()
+
+        // 5) Clear in-memory and on-disk generated meditations
+        GeneratedMeditationsManager.shared.clearAll()
 
         print("User logged out successfully.")
     }
+
     
     // Clear user data from Core Data
     // В функции clearUserData()

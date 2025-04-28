@@ -53,4 +53,12 @@ class KeychainService {
             return nil
         }
     }
+    
+    func delete() {
+            let query: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrAccount as String: "authToken"
+            ]
+            SecItemDelete(query as CFDictionary)
+        }
 }

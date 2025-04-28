@@ -10,20 +10,16 @@ import SwiftUI
 struct MyMeditationsView: View {
     @State private var selectedTab: String = "Понравившиеся" // По умолчанию
     private let tabs = ["Понравившиеся", "Сгенерированные"]
+    @ObservedObject private var favs = FavoritesManager.shared
+    @ObservedObject private var generated = GeneratedMeditationsManager.shared
     
-    var favoriteMeditationsAlbum =
-    MeditationAlbum(
-        title: "Понравившееся",
-        author: "Сервис",
-        tracks: sampleMeditations.filter { $0.tags.contains("Отдых") },
-        status: "Альбом пополняется"
-    )
+
     
     var generatedMeditationsAlbum =
     MeditationAlbum(
         title: "Сгенерированные",
         author: "Сервис",
-        tracks: sampleMeditations.filter { $0.tags.contains("Работа") },
+        tracks: [],
         status: "Альбом пополняется"
     )
     
@@ -47,9 +43,24 @@ struct MyMeditationsView: View {
                     // Spacer()
                     // Список медитаций
                     if selectedTab == "Понравившиеся" {
-                        MeditationListCustomView(album:favoriteMeditationsAlbum)
+                        MeditationListCustomView(
+                                         album: MeditationAlbum(
+                                           title: "Понравившиеся",
+                                           author: "Сервис",
+                                           tracks: favs.favorites,
+                                           status: "Альбом пополняется"
+                                         )
+                                       )
                     } else {
-                        MeditationListCustomView(album: generatedMeditationsAlbum)
+                        //MeditationListCustomView(album: generatedMeditationsAlbum)
+                        MeditationListCustomView(
+                                         album: MeditationAlbum(
+                                           title: "Сгенерированные",
+                                           author: "Сервис",
+                                           tracks: generated.generated.map { Meditation(from: $0) },
+                                           status: "Альбом пополняется"
+                                         )
+                                       )
                     }
                 }
                 .padding(.top, 80)

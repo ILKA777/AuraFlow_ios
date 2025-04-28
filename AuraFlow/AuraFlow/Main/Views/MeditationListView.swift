@@ -19,7 +19,11 @@ struct MeditationListView: View {
     @State private var selectedMeditation: Meditation? = nil
     
     @Binding var navigationPath: NavigationPath
-    
+    @State private var showSubscription = false
+    let subscriptionRequired: Bool
+    private var locked: Bool {
+            subscriptionRequired && !NetworkService.shared.hasSubscription()
+        }
     @State private var scrollOffset: CGFloat = 0.0
     @State private var scrollingRight: Bool = true
     @State private var timer: Timer? = nil
@@ -201,6 +205,7 @@ struct MeditationListView: View {
                             }
                             .padding(.vertical, 8)
                             .background(Color.clear)
+                            .disabled(locked)
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
@@ -216,7 +221,34 @@ struct MeditationListView: View {
             }
             .padding(.top, 0)
             .background(Color.clear)
+            
+            
+            if locked {
+                            Color.black.opacity(0.7)
+                                .ignoresSafeArea()
+
+                            VStack(spacing: 16) {
+                                Text("Для просмотра контента\nнеобходимо оформить подписку")
+                                    .multilineTextAlignment(.center)
+                                    .font(.title3.bold())
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 32)
+
+                                Button("Оформить подписку") {
+                                    showSubscription = true
+                                }
+                                .padding()
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                            }
+                        }
+            
         }
+        .sheet(isPresented: $showSubscription) {
+                    SubscriptionView()
+                }
+        
         .ignoresSafeArea(.keyboard, edges: .all)
         .navigationBarBackButtonHidden(true)
         .onAppear {

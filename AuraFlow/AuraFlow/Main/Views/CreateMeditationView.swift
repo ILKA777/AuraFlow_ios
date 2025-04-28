@@ -12,6 +12,7 @@ import Charts
 
 struct CreateMeditationView: View {
     @StateObject private var viewModel = CreateMeditationViewModel()
+    @State private var keyboardHeight: CGFloat = 0
     
     var body: some View {
         NavigationStack {
@@ -24,8 +25,6 @@ struct CreateMeditationView: View {
                         .font(.system(size: 18)).bold()
                         .offset( y: 10)
                         .padding(.horizontal)
-                    
-                    // Заголовок и управление длительностью
                     HStack {
                         HStack {
                             Text("Время медитации: ")
@@ -205,19 +204,37 @@ struct CreateMeditationView: View {
                     CreatingMeditationPopupView()
                 }
             }
-            .onAppear {
-                  viewModel.refreshLimits()
-                }            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("Создай свою медитацию")
-                        .font(Font.custom("Montserrat-Semibold", size: 20))
-                        .foregroundColor(Color(uiColor: .CalliopeWhite()))
-                }
+            .alert("Нет доступных попыток !", isPresented: $viewModel.showNoAttemptsAlert) {
+                Button("ОК", role: .cancel) { }
+            } message: {
+                Text("У вас больше нет попыток генерации. Оформите подписку или подождите обновления попыток.")
             }
+            .onAppear {
+                viewModel.refreshLimits()
+            }            .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        Text("Создай свою медитацию")
+                            .font(Font.custom("Montserrat-Semibold", size: 20))
+                            .foregroundColor(Color(uiColor: .CalliopeWhite()))
+                    }
+                }
+            
+                .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { note in
+                    if let frame = note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                        withAnimation(.easeOut(duration: 0.25)) {
+                            keyboardHeight = frame.height
+                        }
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        keyboardHeight = 0
+                    }
+                }
+                .onAppear { viewModel.refreshLimits() }
         }
     }
-
 }
 
 #Preview {

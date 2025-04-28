@@ -108,26 +108,27 @@ struct MiniPlayerView: View {
     }
 }
 
-#Preview {
-    MiniPlayerView(playbackManager: MockPlaybackManager())
-        .previewLayout(.sizeThatFits)
-}
+//#Preview {
+//    MiniPlayerView(playbackManager: MockPlaybackManager())
+//        .previewLayout(.sizeThatFits)
+//}
 
 // Mock PlaybackManager for Preview
-class MockPlaybackManager: PlaybackManager {
-    override init() {
-        super.init()
-        self.currentMeditation = Meditation(
-            title: "Медитация для настройки",
-            author: "Тестовый автор",
-            date: "22 августа 2024",
-            duration: "10 мин",
-            videoLink: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            image: UIImage(named: "meditation1")!,
-            tags: ["Тест", "Настройка"]
-        )
-        self.isPlaying = true
-        self.currentTime = 60.0
-        self.duration = 300.0
-    }
-}
+//class MockPlaybackManager: PlaybackManager {
+//    override init() {
+//        super.init()
+//        self.currentMeditation = Meditation(
+//            id: "1",
+//            title: "Медитация для настройки",
+//            author: "Тестовый автор",
+//            date: "22 августа 2024",
+//            duration: "10 мин",
+//            videoLink: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+//            image: UIImage(named: "meditation1")!,
+//            tags: ["Тест", "Настройка"]
+//        )
+//        self.isPlaying = true
+//        self.currentTime = 60.0
+//        self.duration = 300.0
+//    }
+//}

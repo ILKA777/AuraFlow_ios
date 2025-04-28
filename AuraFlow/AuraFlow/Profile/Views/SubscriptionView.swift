@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SubscriptionView: View {
-    // Получаем токен через NetworkService
     private var authToken: String? { NetworkService.shared.getAuthToken() }
     
     @State private var isSubscriptionActive = false
@@ -16,11 +15,11 @@ struct SubscriptionView: View {
     @State private var isShowingCancelAlert = false
     @State private var subscriptionEndDate: Date? = nil
     @Environment(\.dismiss) private var dismiss
+    private let attemptsKey = "remainingAttempts"
 
-    // Генерация ключей в UserDefaults на основе токена
     private var subscriptionKey: String { "subscription_\(authToken ?? "")" }
     private var subscriptionEndKey: String { "subscriptionEnd_\(authToken ?? "")" }
-
+    
     var body: some View {
         VStack(spacing: 20) {
             VStack(alignment: .leading, spacing: 10) {
@@ -30,16 +29,16 @@ struct SubscriptionView: View {
                         .foregroundColor(Color(uiColor: .CalliopeWhite()))
                     Spacer()
                 }
-
+                
                 HStack {
                     Text(isSubscriptionActive && subscriptionEndDate != nil ?
                          "Активна до \(formattedDate(subscriptionEndDate!))" :
-                         "Подписка неактивна")
-                        .font(.system(size: 16))
-                        .foregroundColor(Color(uiColor: .CalliopeWhite()).opacity(0.7))
-
+                            "Подписка неактивна")
+                    .font(.system(size: 16))
+                    .foregroundColor(Color(uiColor: .CalliopeWhite()).opacity(0.7))
+                    
                     Spacer()
-
+                    
                     Toggle("", isOn: Binding(
                         get: { isSubscriptionActive },
                         set: { newValue in
@@ -61,7 +60,7 @@ struct SubscriptionView: View {
             )
             .padding(.horizontal)
             .offset(y: 20)
-
+            
             NavigationLink(destination: PurchaseHistoryView()) {
                 HStack {
                     Text("История покупок")
@@ -80,7 +79,7 @@ struct SubscriptionView: View {
             }
             .padding(.horizontal)
             .offset(y: 20)
-
+            
             Spacer()
         }
         .background(
@@ -105,11 +104,19 @@ struct SubscriptionView: View {
             }
         }
         .tint(Color(uiColor: .CalliopeWhite()))
-        // Загрузка состояния при появлении и при смене токена
         .onAppear(perform: loadSubscriptionState)
         .onChange(of: authToken) { _ in loadSubscriptionState() }
-        // Сохранение при изменении флага
-        .onChange(of: isSubscriptionActive) { _ in saveSubscriptionState() }
+        .onChange(of: isSubscriptionActive) { newValue in
+            saveSubscriptionState()
+            if newValue {
+                let defaults = UserDefaults.standard
+                defaults.set(10, forKey: attemptsKey)
+            }
+            NotificationCenter.default.post(
+                name: .didChangeSubscriptionStatus,
+                object: nil
+            )
+        }
         
         // Алерт оформления подписки
         .alert("Оформление подписки", isPresented: $isShowingSubscriptionAlert) {
@@ -163,6 +170,9 @@ struct SubscriptionView: View {
         }
     }
 }
+extension Notification.Name {
+    static let didChangeSubscriptionStatus = Notification.Name("didChangeSubscriptionStatus")
+}
 
 fileprivate extension SubscriptionView {
     func formattedDate(_ date: Date) -> String {
@@ -178,4 +188,3 @@ fileprivate extension SubscriptionView {
         SubscriptionView()
     }
 }
-

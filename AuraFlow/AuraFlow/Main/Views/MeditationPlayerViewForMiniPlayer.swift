@@ -322,6 +322,16 @@ struct MeditationPlayerViewForMiniPlayer: View {
                                     .frame(width: 24, height: 24)
                                     .foregroundColor(.white)
                             }
+                            
+                            Button(action: {
+                                FavoritesManager.shared.toggle(currentMeditation)
+                            }) {
+                                Image(systemName: FavoritesManager.shared.isFavorite(currentMeditation) ? "heart.fill" : "heart")
+                                    .resizable()
+                                    .frame(width: 24, height: 24)
+                                    .foregroundColor(FavoritesManager.shared.isFavorite(currentMeditation) ? .red : .white)
+                            }
+                            
                         }
                         .padding(.bottom, 40)
                     }

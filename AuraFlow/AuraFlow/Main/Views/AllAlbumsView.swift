@@ -2,8 +2,7 @@
 //  AllAlbumsView.swift
 //  Calliope
 //
-//  Updated: 17.04.2025 – добавлена загрузка альбомов с бэкенда, индикатор
-//  загрузки и поисковая фильтрация (по образцу AllMeditationsView).
+//
 //
 
 import SwiftUI
