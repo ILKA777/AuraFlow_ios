@@ -5,78 +5,181 @@
 //  Created by Ilya on 27.12.2024.
 //
 
-import SwiftUI
+//import SwiftUI
+//
+//struct MyMeditationsView: View {
+//    @State private var selectedTab: String = "Понравившиеся" // По умолчанию
+//    private let tabs = ["Понравившиеся", "Сгенерированные"]
+//    @ObservedObject private var favs = FavoritesManager.shared
+//    @ObservedObject private var generated = GeneratedMeditationsManager.shared
+//
+//
+//
+//    var generatedMeditationsAlbum =
+//    MeditationAlbum(
+//        title: "Сгенерированные",
+//        author: "Сервис",
+//        tracks: [],
+//        status: "Альбом пополняется"
+//    )
+//
+//
+//    var body: some View {
+//        NavigationStack {
+//            ZStack {
+//                Image("default")
+//                    .resizable()
+//                    .scaledToFill()
+//                    .ignoresSafeArea()
+//                VStack(spacing: 20) {
+//                    // Переключатель
+//                    Picker("Выберите тип медитации", selection: $selectedTab) {
+//                        ForEach(tabs, id: \.self) { tab in
+//                            Text(tab).tag(tab)
+//                        }
+//                    }
+//                    .pickerStyle(SegmentedPickerStyle())
+//                    .padding()
+//                    // Spacer()
+//                    // Список медитаций
+//                    if selectedTab == "Понравившиеся" {
+//                        MeditationListCustomView(
+//                                         album: MeditationAlbum(
+//                                           title: "Понравившиеся",
+//                                           author: "Сервис",
+//                                           tracks: favs.favorites,
+//                                           status: "Альбом пополняется"
+//                                         )
+//                                       )
+//                    } else {
+//                        //MeditationListCustomView(album: generatedMeditationsAlbum)
+//                        MeditationListCustomView(
+//                                         album: MeditationAlbum(
+//                                           title: "Сгенерированные",
+//                                           author: "Сервис",
+//                                           tracks: generated.generated.map { Meditation(from: $0) },
+//                                           status: "Альбом пополняется"
+//                                         )
+//                                       )
+//                    }
+//                }
+//                .padding(.top, 80)
+//            }
+//            .toolbar {
+//                ToolbarItem(placement: .principal) {
+//                    Text("Мои медитации")
+//                        .font(Font.custom("Montserrat-Semibold", size: 20))
+//                        .font(.headline)
+//                        .foregroundColor(Color(uiColor: .CalliopeWhite()))
+//                }
+//            }
+//            .navigationBarTitleDisplayMode(.inline)
+//        }
+//    }
+//}
 
 struct MyMeditationsView: View {
-    @State private var selectedTab: String = "Понравившиеся" // По умолчанию
+    @State private var selectedTab: String = "Понравившиеся"
+    @State private var searchText = ""
     private let tabs = ["Понравившиеся", "Сгенерированные"]
     @ObservedObject private var favs = FavoritesManager.shared
     @ObservedObject private var generated = GeneratedMeditationsManager.shared
     
-
-    
-    var generatedMeditationsAlbum =
-    MeditationAlbum(
-        title: "Сгенерированные",
-        author: "Сервис",
-        tracks: [],
-        status: "Альбом пополняется"
-    )
-    
-    
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Image("default")
-                    .resizable()
-                    .scaledToFill()
-                    .ignoresSafeArea()
-                VStack(spacing: 20) {
-                    // Переключатель
-                    Picker("Выберите тип медитации", selection: $selectedTab) {
-                        ForEach(tabs, id: \.self) { tab in
-                            Text(tab).tag(tab)
+        //NavigationStack {
+            ScrollView {
+                ZStack {
+                    Image("default")
+                        .resizable()
+                        .scaledToFill()
+                        .ignoresSafeArea()
+                    
+                    VStack(spacing: 20) {
+                        
+                        Text("Мои медитации")
+                            .font(Font.custom("Montserrat-Semibold", size: 20))
+                            .font(.headline)
+                            .foregroundColor(Color(uiColor: .CalliopeWhite()))
+                            .offset(y: -10)
+                        
+                        // Поисковая строка
+                        TextField("Поиск...", text: $searchText)
+                            .padding(10)
+                            .background(Color.white.opacity(0.2))
+                            .cornerRadius(10)
+                            .padding(.horizontal)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.none)
+                        
+                        // Переключатель
+                        Picker("Выберите тип медитации", selection: $selectedTab) {
+                            ForEach(tabs, id: \.self) { tab in
+                                Text(tab).tag(tab)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .padding(.horizontal)
+                        
+                        // Список медитаций
+                        if selectedTab == "Понравившиеся" {
+                            MeditationListCustomView(
+                                album: MeditationAlbum(
+                                    title: "Понравившиеся",
+                                    author: "Сервис",
+                                    tracks: filteredFavorites(),
+                                    status: "Альбом пополняется"
+                                )
+                            )
+                        } else {
+                            MeditationListCustomView(
+                                album: MeditationAlbum(
+                                    title: "Сгенерированные",
+                                    author: "Сервис",
+                                    tracks: filteredGenerated(),
+                                    status: "Альбом пополняется"
+                                )
+                            )
                         }
                     }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding()
-                    // Spacer()
-                    // Список медитаций
-                    if selectedTab == "Понравившиеся" {
-                        MeditationListCustomView(
-                                         album: MeditationAlbum(
-                                           title: "Понравившиеся",
-                                           author: "Сервис",
-                                           tracks: favs.favorites,
-                                           status: "Альбом пополняется"
-                                         )
-                                       )
-                    } else {
-                        //MeditationListCustomView(album: generatedMeditationsAlbum)
-                        MeditationListCustomView(
-                                         album: MeditationAlbum(
-                                           title: "Сгенерированные",
-                                           author: "Сервис",
-                                           tracks: generated.generated.map { Meditation(from: $0) },
-                                           status: "Альбом пополняется"
-                                         )
-                                       )
-                    }
+                    .padding(.top, 80)
                 }
-                .padding(.top, 80)
+                
             }
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("Мои медитации")
-                        .font(Font.custom("Montserrat-Semibold", size: 20))
-                        .font(.headline)
-                        .foregroundColor(Color(uiColor: .CalliopeWhite()))
-                }
-            }
+//            .toolbar {
+//                ToolbarItem(placement: .principal) {
+//                    Text("Мои медитации")
+//                        .font(Font.custom("Montserrat-Semibold", size: 20))
+//                        .font(.headline)
+//                        .foregroundColor(Color(uiColor: .CalliopeWhite()))
+//                }
+//            }
             .navigationBarTitleDisplayMode(.inline)
+       // }
+        .edgesIgnoringSafeArea(.all)
+        .scrollDisabled(true)
+        
+    }
+    
+    // Фильтрация для избранных
+    private func filteredFavorites() -> [Meditation] {
+        guard !searchText.isEmpty else { return favs.favorites }
+        return favs.favorites.filter {
+            $0.title.localizedCaseInsensitiveContains(searchText) ||
+            ($0.author.localizedCaseInsensitiveContains(searchText) ?? false)
+        }
+    }
+    
+    // Фильтрация для сгенерированных
+    private func filteredGenerated() -> [Meditation] {
+        let meditations = generated.generated.map { Meditation(from: $0) }
+        guard !searchText.isEmpty else { return meditations }
+        return meditations.filter {
+            $0.title.localizedCaseInsensitiveContains(searchText) ||
+            ($0.author.localizedCaseInsensitiveContains(searchText) ?? false)
         }
     }
 }
+
 
 import SwiftUI
 

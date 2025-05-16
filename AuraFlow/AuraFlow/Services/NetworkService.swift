@@ -75,7 +75,7 @@ class NetworkService {
                     )
                 }
             }
-            if meditations.count < 5 {
+            if meditations.count == 0 {
                 let mockURLs = [
                     "https://storage.yandexcloud.net/auraflow/sleepMeditation.mp4",
                     "https://storage.yandexcloud.net/auraflow/workMeditation.mp4",
